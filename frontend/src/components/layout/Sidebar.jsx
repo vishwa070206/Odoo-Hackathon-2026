@@ -1,138 +1,138 @@
-
 import {
-    LayoutDashboard,
-    Building2,
-    Package,
-    ArrowRightLeft,
-    CalendarDays,
-    Wrench,
-    ClipboardCheck,
-    BarChart3,
-    Bell,
-    LogOut,
+  LayoutDashboard,
+  Building2,
+  Package,
+  ArrowRightLeft,
+  CalendarDays,
+  Wrench,
+  ClipboardCheck,
+  Bell,
+  FileText,
+  Users,
+  LogOut,
 } from "lucide-react";
 
 import { NavLink } from "react-router-dom";
 
 const menu = [
+  {
+    name: "Dashboard",
+    path: "/dashboard",
+    icon: LayoutDashboard,
+  },
 
-    {
-        name: "Dashboard",
-        path: "/dashboard",
-        icon: LayoutDashboard,
-    },
+  {
+    name: "Departments",
+    path: "/departments",
+    icon: Building2,
+  },
 
-    {
-        name: "Organization",
-        path: "/organization",
-        icon: Building2,
-    },
+  {
+    name: "Employees",
+    path: "/employees",
+    icon: Users,
+  },
 
-    {
-        name: "Assets",
-        path: "/assets",
-        icon: Package,
-    },
+  {
+    name: "Assets",
+    path: "/assets",
+    icon: Package,
+  },
 
-    {
-        name: "Allocation",
-        path: "/allocation",
-        icon: ArrowRightLeft,
-    },
+  {
+    name: "Allocations",
+    path: "/allocations",
+    icon: ArrowRightLeft,
+  },
 
-    {
-        name: "Booking",
-        path: "/booking",
-        icon: CalendarDays,
-    },
+  {
+    name: "Bookings",
+    path: "/bookings",
+    icon: CalendarDays,
+  },
 
-    {
-        name: "Maintenance",
-        path: "/maintenance",
-        icon: Wrench,
-    },
+  {
+    name: "Maintenance",
+    path: "/maintenance",
+    icon: Wrench,
+  },
 
-    {
-        name: "Audit",
-        path: "/audit",
-        icon: ClipboardCheck,
-    },
+  {
+    name: "Audits",
+    path: "/audits",
+    icon: ClipboardCheck,
+  },
 
-    {
-        name: "Reports",
-        path: "/reports",
-        icon: BarChart3,
-    },
+  {
+    name: "Logs",
+    path: "/logs",
+    icon: FileText,
+  },
 
-    {
-        name: "Notifications",
-        path: "/notifications",
-        icon: Bell,
-    },
-
+  {
+    name: "Notifications",
+    path: "/notifications",
+    icon: Bell,
+  },
 ];
 
 function Sidebar() {
+  const handleLogout = () => {
+    localStorage.removeItem("accessToken");
+    window.location.href = "/login";
+  };
 
-    return (
+  return (
+    <aside className="flex h-screen w-72 flex-col border-r bg-white shadow-sm">
+      {/* Logo */}
+      <div className="border-b p-6">
+        <h1 className="text-3xl font-bold text-blue-600">
+          AssetFlow
+        </h1>
 
-        <aside className="w-72 bg-white border-r shadow-sm">
+        <p className="mt-1 text-sm text-gray-500">
+          Enterprise Asset Management
+        </p>
+      </div>
 
-            <div className="p-6">
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto px-4 py-6">
+        {menu.map((item) => (
+          <NavLink
+            key={item.path}
+            to={item.path}
+            className={({ isActive }) =>
+              `mb-2 flex items-center gap-3 rounded-xl px-4 py-3 transition-all duration-200 ${
+                isActive
+                  ? "bg-blue-600 text-white shadow"
+                  : "text-gray-700 hover:bg-slate-100"
+              }`
+            }
+          >
+            <item.icon size={20} />
 
-                <h1 className="text-2xl font-bold text-blue-600">
+            <span className="font-medium">
+              {item.name}
+            </span>
+          </NavLink>
+        ))}
+      </nav>
 
-                    AssetFlow
+      {/* Logout */}
+      <div className="border-t p-4">
+        <button
+          onClick={handleLogout}
+          className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-red-600 transition hover:bg-red-50"
+        >
+          <LogOut size={20} />
 
-                </h1>
-
-            </div>
-
-            <nav className="px-4">
-
-                {
-
-                    menu.map((item) => (
-
-                        <NavLink
-                            key={item.path}
-                            to={item.path}
-                            className={({ isActive }) =>
-                                `flex items-center gap-3 rounded-xl px-4 py-3 mb-2 transition ${
-                                    isActive
-                                        ? "bg-blue-600 text-white"
-                                        : "hover:bg-slate-100"
-                                }`
-                            }
-                        >
-                            <item.icon size={20} />
-
-                            {item.name}
-
-                        </NavLink>
-
-                    ))
-
-                }
-
-            </nav>
-
-            <div className="absolute bottom-6 left-6">
-
-                <button className="flex items-center gap-2 text-red-500">
-
-                    <LogOut size={20} />
-
-                    Logout
-
-                </button>
-
-            </div>
-
-        </aside>
-
-    );
-
+          <span className="font-medium">
+            Logout
+          </span>
+        </button>
+      </div>
+    </aside>
+  );
 }
 
 export default Sidebar;

@@ -10,40 +10,46 @@ import Signup from "../pages/auth/Signup";
 import ForgotPassword from "../pages/auth/ForgotPassword";
 import ResetPassword from "../pages/auth/ResetPassword";
 
-// Dashboard / Modules Pages
-import Dashboard from "../pages/Dashboard";
+// Dashboard
+import Dashboard from "../pages/dashboard/Dashboard";
+
+// Assets
 import AssetDirectory from "../pages/assets/AssetDirectory";
 import AssetForm from "../pages/assets/AssetForm";
 import AssetDetail from "../pages/assets/AssetDetail";
+
+// Modules
 import Allocations from "../pages/allocations/Allocations";
 import Bookings from "../pages/bookings/Bookings";
-import Dashboard from "../pages/dashboard/Dashboard";
-import DashboardLayout from "../layouts/DashboardLayout";
-
-import Organization from "../pages/organization/Organization";
-import Assets from "../pages/assets/Assets";
-import Allocation from "../pages/allocation/Allocation";
-import Booking from "../pages/booking/Booking";
 import Maintenance from "../pages/maintenance/Maintenance";
 import Audits from "../pages/audit/Audits";
+
+// Organization
 import Departments from "../pages/organization/Departments";
 import Employees from "../pages/organization/Employees";
+
+// Logs
 import Logs from "../pages/logs/Logs";
 
-// Protected Route wrapper component
+// (Create these pages in future steps)
+import Notifications from "../pages/notifications/Notifications";
+import Reports from "../pages/reports/Reports";
+
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem("accessToken");
+
   if (!token) {
     return <Navigate to="/login" replace />;
   }
+
   return children;
 }
-
 
 function AppRoutes() {
   return (
     <Routes>
-      {/* Public / Auth Pages */}
+      {/* ================= Authentication ================= */}
+
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
@@ -51,7 +57,8 @@ function AppRoutes() {
         <Route path="/reset-password" element={<ResetPassword />} />
       </Route>
 
-      {/* Protected Modules Dashboard Pages */}
+      {/* ================= Protected Area ================= */}
+
       <Route
         path="/"
         element={
@@ -60,28 +67,46 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       >
+        {/* Default */}
         <Route index element={<Navigate to="/dashboard" replace />} />
+
+        {/* Dashboard */}
         <Route path="dashboard" element={<Dashboard />} />
-        
-        {/* Assets module */}
+
+        {/* Organization */}
+        <Route path="departments" element={<Departments />} />
+        <Route path="employees" element={<Employees />} />
+
+        {/* Assets */}
         <Route path="assets" element={<AssetDirectory />} />
         <Route path="assets/new" element={<AssetForm />} />
         <Route path="assets/edit/:id" element={<AssetForm />} />
         <Route path="assets/:id" element={<AssetDetail />} />
 
-        {/* Allocations & bookings module */}
+        {/* Allocation */}
         <Route path="allocations" element={<Allocations />} />
+
+        {/* Bookings */}
         <Route path="bookings" element={<Bookings />} />
+
+        {/* Maintenance */}
         <Route path="maintenance" element={<Maintenance />} />
+
+        {/* Audits */}
         <Route path="audits" element={<Audits />} />
 
-        {/* Admin Setup */}
-        <Route path="departments" element={<Departments />} />
-        <Route path="employees" element={<Employees />} />
+        {/* Reports */}
+        <Route path="reports" element={<Reports />} />
+
+        {/* Notifications */}
+        <Route path="notifications" element={<Notifications />} />
+
+        {/* Logs */}
         <Route path="logs" element={<Logs />} />
       </Route>
 
-      {/* Fallback Redirection */}
+      {/* ================= Invalid Routes ================= */}
+
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
