@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: assetflow-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: assetflow
+      MYSQL_USER: assetflow
+      MYSQL_PASSWORD: assetflow123
+      MYSQL_ROOT_PASSWORD: rootpassword123
+    ports:
+      - '3306:3306'
+    volumes:
+      - mysqldata:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: assetflow-backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: mysql://assetflow:assetflow123@mysql:3306/assetflow
+      JWT_SECRET: assetflow-jwt-secret-key-change-in-production
+      JWT_REFRESH_SECRET: assetflow-refresh-secret-key-change-in-production
+      JWT_EXPIRES_IN: 15m
+      JWT_REFRESH_EXPIRES_IN: 7d
+      CLIENT_URL: http://localhost:5173
+      PORT: 3001
+      NODE_ENV: production
+    ports:
+      - '3001:3001'
+    depends_on:
+      mysql:
+        condition: service_healthy
+    volumes:
+      - uploads:/app/uploads
+
+volumes:
+  mysqldata:
+  uploads:
