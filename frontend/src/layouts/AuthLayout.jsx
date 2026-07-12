@@ -1,76 +1,60 @@
-import { Outlet } from "react-router-dom";
-import { Building2, ShieldCheck, Laptop } from "lucide-react";
+import { Outlet, Navigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import Logo from "../components/ui/Logo";
 
 function AuthLayout() {
+  const token = localStorage.getItem("accessToken");
+
+  // Redirect authenticated users to dashboard
+  if (token) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return (
-    <div className="min-h-screen grid lg:grid-cols-2 bg-slate-50">
-
-      {/* Left Panel */}
-      <div className="hidden lg:flex flex-col justify-center bg-gradient-to-br from-blue-700 via-blue-600 to-sky-500 text-white p-16">
-
-        <h1 className="text-5xl font-bold mb-6">
-          AssetFlow ERP
-        </h1>
-
-        <p className="text-xl leading-8 opacity-90">
-          Manage enterprise assets, employee allocations,
-          maintenance, audits and bookings from one centralized
-          platform.
-        </p>
-
-        <div className="mt-16 space-y-8">
-
-          <div className="flex items-center gap-4">
-            <Building2 size={42}/>
-            <div>
-              <h3 className="font-semibold text-xl">
-                Asset Tracking
-              </h3>
-
-              <p className="opacity-80">
-                Monitor assets in real time.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <Laptop size={42}/>
-            <div>
-              <h3 className="font-semibold text-xl">
-                Resource Booking
-              </h3>
-
-              <p className="opacity-80">
-                Book meeting rooms and shared equipment.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <ShieldCheck size={42}/>
-            <div>
-              <h3 className="font-semibold text-xl">
-                Secure Enterprise Access
-              </h3>
-
-              <p className="opacity-80">
-                Role-based authentication with JWT.
-              </p>
-            </div>
-          </div>
-
+    <div className="flex min-h-screen bg-slate-900 text-slate-100 overflow-hidden">
+      {/* Left decorative/marketing panel (Desktop only) */}
+      <div className="hidden lg:flex lg:w-1/2 relative flex-col justify-between p-12 bg-gradient-to-br from-indigo-950 via-slate-900 to-indigo-950 border-r border-slate-800">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-500/10 via-transparent to-transparent pointer-events-none" />
+        
+        <div className="relative z-10">
+          <Logo className="h-8 text-indigo-400" />
         </div>
 
+        <div className="relative z-10 my-auto max-w-lg space-y-6">
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-200 via-slate-100 to-indigo-200 bg-clip-text text-transparent"
+          >
+            AssetFlow
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="text-lg text-slate-400 leading-relaxed"
+          >
+            Enterprise Asset & Resource Management System. Track lifecycle, schedule resources, orchestrate maintenance, and audit compliance with ease.
+          </motion.p>
+        </div>
+
+        <div className="relative z-10 text-sm text-slate-500">
+          © {new Date().getFullYear()} AssetFlow. All rights reserved.
+        </div>
       </div>
 
-      {/* Right Panel */}
-
-      <div className="flex items-center justify-center p-8">
-
-        <Outlet />
-
+      {/* Right form panel */}
+      <div className="w-full lg:w-1/2 flex flex-col justify-center px-6 py-12 sm:px-16 lg:px-20 xl:px-24 bg-slate-950">
+        <div className="mx-auto w-full max-w-md">
+          {/* Logo visible only on mobile/tablet */}
+          <div className="lg:hidden mb-8 flex justify-center">
+            <Logo className="h-10 text-indigo-400" />
+          </div>
+          
+          <Outlet />
+        </div>
       </div>
-
     </div>
   );
 }

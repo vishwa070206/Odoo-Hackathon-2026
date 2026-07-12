@@ -1,17 +1,38 @@
-import api from "./axios";
+import axiosInstance from "./axios";
 
-export const loginUser = (data) => {
-    return api.post("/auth/login", data);
-};
+export const authApi = {
+  signup: async (data) => {
+    const response = await axiosInstance.post("/auth/signup", data);
+    return response.data;
+  },
 
-export const registerUser = (data) => {
-    return api.post("/auth/register", data);
-};
+  login: async (data) => {
+    const response = await axiosInstance.post("/auth/login", data);
+    return response.data;
+  },
 
-export const forgotPassword = (data) => {
-    return api.post("/auth/forgot-password", data);
-};
+  forgotPassword: async (email) => {
+    const response = await axiosInstance.post("/auth/forgot-password", { email });
+    return response.data;
+  },
 
-export const resetPassword = (data) => {
-    return api.post("/auth/reset-password", data);
+  resetPassword: async (token, password) => {
+    const response = await axiosInstance.post("/auth/reset-password", { token, password });
+    return response.data;
+  },
+
+  verifyEmail: async (token) => {
+    const response = await axiosInstance.get(`/auth/verify-email?token=${token}`);
+    return response.data;
+  },
+
+  getMe: async () => {
+    const response = await axiosInstance.get("/auth/me");
+    return response.data;
+  },
+
+  logout: async () => {
+    const response = await axiosInstance.post("/auth/logout");
+    return response.data;
+  },
 };

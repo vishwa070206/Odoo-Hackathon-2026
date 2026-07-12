@@ -1,32 +1,39 @@
-const Input = ({
+import React from "react";
+
+const Input = React.forwardRef(({
   label,
+  type = "text",
+  placeholder,
   error,
+  className = "",
   ...props
-}) => {
-
+}, ref) => {
   return (
-
-    <div className="space-y-2">
-
-      <label className="font-medium text-slate-700">
-        {label}
-      </label>
-
-      <input
-        className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-600"
-        {...props}
-      />
-
-      {error && (
-        <p className="text-sm text-red-500">
-          {error}
-        </p>
+    <div className="flex flex-col gap-1.5 w-full">
+      {label && (
+        <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+          {label}
+        </label>
       )}
 
+      <input
+        ref={ref}
+        type={type}
+        placeholder={placeholder}
+        className={`rounded-xl border border-slate-800 bg-slate-900 px-4 py-3 text-slate-100 placeholder-slate-500 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all ${
+          error ? "border-rose-500 focus:border-rose-500 focus:ring-rose-500" : ""
+        } ${className}`}
+        {...props}
+      />
+      {error && (
+        <span className="text-xs text-rose-500 font-medium">
+          {error.message || error}
+        </span>
+      )}
     </div>
-
   );
+});
 
-};
+Input.displayName = "Input";
 
 export default Input;

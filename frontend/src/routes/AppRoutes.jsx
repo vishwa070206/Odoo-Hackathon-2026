@@ -1,110 +1,82 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 
+// Layouts
 import AuthLayout from "../layouts/AuthLayout";
+import DashboardLayout from "../layouts/DashboardLayout";
 
+// Auth Pages
 import Login from "../pages/auth/Login";
 import Signup from "../pages/auth/Signup";
 import ForgotPassword from "../pages/auth/ForgotPassword";
 import ResetPassword from "../pages/auth/ResetPassword";
-import Dashboard from "../pages/dashboard/Dashboard";
-import DashboardLayout from "../layouts/DashboardLayout";
-import Dashboard from "../pages/dashboard/Dashboard";
-import Organization from "../pages/organization/Organization";
-import Assets from "../pages/assets/Assets";
-import Allocation from "../pages/allocation/Allocation";
-import Booking from "../pages/booking/Booking";
+
+// Dashboard / Modules Pages
+import Dashboard from "../pages/Dashboard";
+import AssetDirectory from "../pages/assets/AssetDirectory";
+import AssetForm from "../pages/assets/AssetForm";
+import AssetDetail from "../pages/assets/AssetDetail";
+import Allocations from "../pages/allocations/Allocations";
+import Bookings from "../pages/bookings/Bookings";
 import Maintenance from "../pages/maintenance/Maintenance";
-import Audit from "../pages/audit/Audit";
-import Reports from "../pages/reports/Reports";
-import Notifications from "../pages/notifications/Notifications";
+import Audits from "../pages/audit/Audits";
+import Departments from "../pages/organization/Departments";
+import Employees from "../pages/organization/Employees";
+import Logs from "../pages/logs/Logs";
 
-import DashboardLayout from "../layouts/DashboardLayout";
+// Protected Route wrapper component
+function ProtectedRoute({ children }) {
+  const token = localStorage.getItem("accessToken");
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+  return children;
+}
+
 function AppRoutes() {
+  return (
+    <Routes>
+      {/* Public / Auth Pages */}
+      <Route element={<AuthLayout />}>
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+      </Route>
 
-    return (
+      {/* Protected Modules Dashboard Pages */}
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
+            <DashboardLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<Navigate to="/dashboard" replace />} />
+        <Route path="dashboard" element={<Dashboard />} />
+        
+        {/* Assets module */}
+        <Route path="assets" element={<AssetDirectory />} />
+        <Route path="assets/new" element={<AssetForm />} />
+        <Route path="assets/edit/:id" element={<AssetForm />} />
+        <Route path="assets/:id" element={<AssetDetail />} />
 
-        <Routes>
+        {/* Allocations & bookings module */}
+        <Route path="allocations" element={<Allocations />} />
+        <Route path="bookings" element={<Bookings />} />
+        <Route path="maintenance" element={<Maintenance />} />
+        <Route path="audits" element={<Audits />} />
 
-            <Route path="/" element={<Navigate to="/login"/>}/>
+        {/* Admin Setup */}
+        <Route path="departments" element={<Departments />} />
+        <Route path="employees" element={<Employees />} />
+        <Route path="logs" element={<Logs />} />
+      </Route>
 
-            <Route element={<AuthLayout/>}>
-
-                <Route
-                    path="/login"
-                    element={<Login/>}
-                />
-
-                <Route
-                    path="/signup"
-                    element={<Signup/>}
-                />
-
-                <Route
-                    path="/forgot-password"
-                    element={<ForgotPassword/>}
-                />
-
-                <Route
-                    path="/reset-password"
-                    element={<ResetPassword/>}
-                />
-
-
-            </Route>
-
-        <Route element={<DashboardLayout />}>
-
-  <Route
-    path="/dashboard"
-    element={<Dashboard />}
-  />
-
-  <Route
-    path="/organization"
-    element={<Organization />}
-  />
-
-  <Route
-    path="/assets"
-    element={<Assets />}
-  />
-
-  <Route
-    path="/allocation"
-    element={<Allocation />}
-  />
-
-  <Route
-    path="/booking"
-    element={<Booking />}
-  />
-
-  <Route
-    path="/maintenance"
-    element={<Maintenance />}
-  />
-
-  <Route
-    path="/audit"
-    element={<Audit />}
-  />
-
-  <Route
-    path="/reports"
-    element={<Reports />}
-  />
-
-  <Route
-    path="/notifications"
-    element={<Notifications />}
-  />
-
-</Route>   
-
-        </Routes>
-
-    )
-
+      {/* Fallback Redirection */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
 }
 
 export default AppRoutes;

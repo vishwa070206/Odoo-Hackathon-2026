@@ -1,24 +1,24 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Link, useNavigate } from "react-router-dom";
+import toast, { Toaster } from "react-hot-toast";
 import { motion } from "framer-motion";
-import toast from "react-hot-toast";
-
-import Card from "../../components/ui/Card";
-import Button from "../../components/ui/Button";
+import { authApi } from "../../api/authApi";
 import Input from "../../components/ui/Input";
 import PasswordInput from "../../components/ui/PasswordInput";
-import Logo from "../../components/ui/Logo";
+import Button from "../../components/ui/Button";
 
-import { loginSchema } from "../../utils/validation";
-import { useAuth } from "../../context/AuthContext";
+const loginSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(1, "Password is required"),
+  rememberMe: z.boolean().optional(),
+});
 
 function Login() {
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { login } = useAuth();
-
-  const [loading, setLoading] = useState(false);
 
   const {
     register,
@@ -26,132 +26,103 @@ function Login() {
     formState: { errors },
   } = useForm({
     resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+      rememberMe: false,
+    },
   });
 
   const onSubmit = async (data) => {
+    setIsLoading(true);
     try {
-      setLoading(true);
+      const response = await authApi.login(data);
+      toast.success("Welcome back, login successful!");
+      
+      // Store token and user details
+      localStorage.setItem("accessToken", response.accessToken);
+      localStorage.setItem("refreshToken", response.refreshToken);
+      localStorage.setItem("user", JSON.stringify(response.user));
 
-      // Simulate backend delay
-      await new Promise((resolve) => setTimeout(resolve, 1200));
-
-      // Mock logged-in user
-      const mockUser = {
-        id: 1,
-        name: "Demo User",
-        email: data.email,
-        role: "Employee",
-        token: "demo-token",
-      };
-
-      login(mockUser);
-
-      toast.success("Login Successful!");
-
-      navigate("/dashboard");
-    } catch (error) {
-      toast.error("Something went wrong.");
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 1000);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Invalid credentials. Please try again.");
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 25 }}
+      initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="w-full max-w-md"
+      className="space-y-6"
     >
-      <Card>
+      <Toaster position="top-right" />
+      
+      <div className="space-y-2">
+        <h2 className="text-2xl font-bold text-slate-100">Sign in to your account</h2>
+        <p className="text-sm text-slate-400">
+          Enter your credentials to access the ERP system.
+        </p>
+      </div>
 
-        <Logo />
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <Input
+          label="Email Address"
+          type="email"
+          placeholder="name@company.com"
+          error={errors.email}
+          {...register("email")}
+        />
 
-        <div className="mt-8 mb-8">
-          <h2 className="text-3xl font-bold">
-            Welcome Back
-          </h2>
-
-          <p className="mt-2 text-slate-500">
-            Sign in to continue to AssetFlow ERP
-          </p>
-        </div>
-
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="space-y-5"
-        >
-
-          <Input
-            label="Email Address"
-            placeholder="Enter your email"
-            {...register("email")}
-            error={errors.email?.message}
-          />
-
+        <div className="space-y-1">
           <PasswordInput
             label="Password"
-            placeholder="Enter your password"
+            error={errors.password}
             {...register("password")}
-            error={errors.password?.message}
           />
-
-          <div className="flex items-center justify-between text-sm">
-
-            <label className="flex items-center gap-2">
-
-              <input type="checkbox" />
-
-              Remember Me
-
-            </label>
-
+          <div className="flex justify-end">
             <Link
               to="/forgot-password"
-              className="text-blue-600 hover:underline"
+              className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 transition"
             >
               Forgot Password?
             </Link>
-
           </div>
-
-          <Button type="submit">
-
-            {loading ? "Signing In..." : "Login"}
-
-          </Button>
-
-        </form>
-
-        <div className="my-6 flex items-center">
-
-          <div className="h-px flex-1 bg-gray-300"></div>
-
-          <span className="mx-3 text-gray-500">
-            OR
-          </span>
-
-          <div className="h-px flex-1 bg-gray-300"></div>
-
         </div>
 
-        <Link to="/signup">
+        <div className="flex items-center gap-2">
+          <input
+            id="rememberMe"
+            type="checkbox"
+            className="h-4 w-4 rounded border-slate-800 bg-slate-900 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-slate-950 accent-indigo-600"
+            {...register("rememberMe")}
+          />
+          <label htmlFor="rememberMe" className="text-sm text-slate-400 select-none cursor-pointer">
+            Remember my session
+          </label>
+        </div>
 
-          <button
-            className="w-full rounded-xl border border-blue-600 py-3 font-semibold text-blue-600 transition hover:bg-blue-50"
+        <Button type="submit" isLoading={isLoading} className="mt-2">
+          Sign In
+        </Button>
+      </form>
+
+      <div className="text-center">
+        <p className="text-sm text-slate-400">
+          Don't have an employee account?{" "}
+          <Link
+            to="/signup"
+            className="font-semibold text-indigo-400 hover:text-indigo-300 transition"
           >
-            Create Employee Account
-          </button>
-
-        </Link>
-
-        <p className="mt-6 text-center text-sm text-slate-500">
-          Only Employee accounts can be created.
-          <br />
-          Administrative roles are assigned later by an Admin.
+            Create account
+          </Link>
         </p>
-
-      </Card>
+      </div>
     </motion.div>
   );
 }

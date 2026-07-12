@@ -1,47 +1,30 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import Input from "./Input";
 
-const PasswordInput = ({
-  label,
-  error,
-  ...props
-}) => {
-
-  const [show, setShow] = useState(false);
+const PasswordInput = React.forwardRef(({ label = "Password", placeholder = "••••••••", ...props }, ref) => {
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <div className="space-y-2">
-
-      <label className="font-medium text-slate-700">
-        {label}
-      </label>
-
-      <div className="relative">
-
-        <input
-          type={show ? "text" : "password"}
-          className="w-full rounded-xl border border-gray-300 px-4 py-3 pr-12 outline-none focus:border-blue-600"
-          {...props}
-        />
-
-        <button
-          type="button"
-          className="absolute right-4 top-3"
-          onClick={() => setShow(!show)}
-        >
-          {show ? <EyeOff size={18}/> : <Eye size={18}/>}
-        </button>
-
-      </div>
-
-      {error && (
-        <p className="text-red-500 text-sm">
-          {error}
-        </p>
-      )}
-
+    <div className="relative w-full">
+      <Input
+        ref={ref}
+        type={showPassword ? "text" : "password"}
+        label={label}
+        placeholder={placeholder}
+        {...props}
+      />
+      <button
+        type="button"
+        onClick={() => setShowPassword(!showPassword)}
+        className="absolute right-4 top-[38px] text-slate-400 hover:text-slate-200 transition"
+      >
+        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+      </button>
     </div>
   );
-};
+});
+
+PasswordInput.displayName = "PasswordInput";
 
 export default PasswordInput;
