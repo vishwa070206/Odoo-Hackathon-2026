@@ -4,23 +4,25 @@ import {
   ArrowLeft,
   Calendar,
   Wrench,
+  AlertTriangle,
+  FolderSync,
   Tag,
   MapPin,
   Clock,
   Printer,
-  History,
   FileText,
-  User,
-  Plus,
-  ShieldCheck,
-  Building,
-  Image as ImageIcon
+  Image as ImageIcon,
+  QrCode,
+  History,
+  CheckCircle,
+  AlertCircle
 } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
+import { motion } from "framer-motion";
 import { assetApi } from "../../api/assetApi";
 import { allocationApi } from "../../api/allocationApi";
-import { maintenanceApi } from "../../api/maintenanceApi";
 import { orgApi } from "../../api/orgApi";
+import { maintenanceApi } from "../../api/maintenanceApi";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
@@ -29,69 +31,188 @@ function AssetDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [asset, setAsset] = useState(null);
-  const [activeTab, setActiveTab] = useState("timeline");
   const [isLoading, setIsLoading] = useState(true);
-
-  // Workflow Dialog states
-  const [isAllocationOpen, setIsAllocationOpen] = useState(false);
-  const [isReturnOpen, setIsReturnOpen] = useState(false);
-  const [isTransferOpen, setIsTransferOpen] = useState(false);
-  const [isMaintenanceOpen, setIsMaintenanceOpen] = useState(false);
-
-  // Form states for dialog workflows
   const [employees, setEmployees] = useState([]);
   const [departments, setDepartments] = useState([]);
+  const [activeTab, setActiveTab] = useState("timeline");
+
+  // Checkout Dialog State
+  const [isAllocationOpen, setIsAllocationOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState("");
   const [selectedDepartment, setSelectedDepartment] = useState("");
   const [expectedReturnDate, setExpectedReturnDate] = useState("");
   const [allocationNotes, setAllocationNotes] = useState("");
-  
-  // Return workflow state
+
+  // Return Dialog State
+  const [isReturnOpen, setIsReturnOpen] = useState(false);
   const [returnCondition, setReturnCondition] = useState("GOOD");
   const [returnNotes, setReturnNotes] = useState("");
 
-  // Transfer workflow state
-  const [transferReason, setTransferReason] = useState("");
+  // Transfer Dialog State
+  const [isTransferOpen, setIsTransferOpen] = useState(false);
   const [transferToDept, setTransferToDept] = useState("");
   const [transferToUser, setTransferToUser] = useState("");
+  const [transferReason, setTransferReason] = useState("");
 
-  // Maintenance workflow state
+  // Maintenance Dialog State
+  const [isMaintenanceOpen, setIsMaintenanceOpen] = useState(false);
   const [maintTitle, setMaintTitle] = useState("");
-  const [maintDesc, setMaintDesc] = useState("");
   const [maintPriority, setMaintPriority] = useState("MEDIUM");
+  const [maintDesc, setMaintDesc] = useState("");
 
   const userJson = localStorage.getItem("user");
   const user = userJson ? JSON.parse(userJson) : null;
   const isManagerOrAdmin = user && ["ADMIN", "ASSET_MANAGER"].includes(user.role);
 
-  const fetchAsset = async () => {
+  const fetchAssetDetails = async () => {
+    setIsLoading(true);
     try {
-      const response = await assetApi.getAssetById(id);
-      setAsset(response);
+      const data = await assetApi.getAssetById(id);
+      setAsset(data);
     } catch (err) {
       toast.error("Failed to load asset details.");
-      navigate("/assets");
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchAsset();
-    
-    // Fetch employee and department dropdown meta
-    const fetchMeta = async () => {
+    fetchAssetDetails();
+  }, [id]);
+
+  useEffect(() => {
+    const fetchOrgData = async () => {
       try {
-        const users = await orgApi.listUsers();
-        setEmployees(users.data || users);
+        const emps = await orgApi.listUsers();
+        setEmployees(emps.data || emps);
+
         const depts = await orgApi.listDepartments();
         setDepartments(depts.data || depts);
       } catch (err) {
         console.error(err);
       }
     };
-    fetchMeta();
-  }, [id]);
+    fetchOrgData();
+  }, []);
+
+  const handleAllocate = async (e) => {
+    e.preventDefault();
+    if (!selectedEmployee) {
+      toast.error("Please select an employee.");
+      return;
+    }
+    try {
+      await allocationApi.checkoutAsset({
+        assetId: id,
+        employeeId: selectedEmployee,
+        departmentId: selectedDepartment || undefined,
+        expectedReturnDate: expectedReturnDate ? new Date(expectedReturnDate).toISOString() : undefined,
+        notes: allocationNotes,
+      });
+      toast.success("Asset checked out successfully!");
+      setIsAllocationOpen(false);
+      
+      // Reset
+      setSelectedEmployee("");
+      setSelectedDepartment("");
+      setExpectedReturnDate("");
+      setAllocationNotes("");
+
+      fetchAssetDetails();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to checkout asset.");
+    }
+  };
+
+  const handleReturn = async (e) => {
+    e.preventDefault();
+    try {
+      await allocationApi.returnAsset({
+        assetId: id,
+        condition: returnCondition,
+        notes: returnNotes,
+      });
+      toast.success("Asset returned to inventory successfully!");
+      setIsReturnOpen(false);
+      
+      // Reset
+      setReturnCondition("GOOD");
+      setReturnNotes("");
+
+      fetchAssetDetails();
+    } catch (err) {
+      toast.error("Failed to return asset.");
+    }
+  };
+
+  const handleTransfer = async (e) => {
+    e.preventDefault();
+    if (!transferToUser) {
+      toast.error("Please select the target employee.");
+      return;
+    }
+    try {
+      await allocationApi.requestTransfer({
+        assetId: id,
+        targetEmployeeId: transferToUser,
+        targetDepartmentId: transferToDept || undefined,
+        reason: transferReason,
+      });
+      toast.success("Custody transfer request submitted for approval.");
+      setIsTransferOpen(false);
+      
+      // Reset
+      setTransferToDept("");
+      setTransferToUser("");
+      setTransferReason("");
+
+      fetchAssetDetails();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to submit transfer request.");
+    }
+  };
+
+  const handleMaintenance = async (e) => {
+    e.preventDefault();
+    if (!maintTitle) {
+      toast.error("Please enter a ticket title.");
+      return;
+    }
+    try {
+      await maintenanceApi.createRequest({
+        assetId: id,
+        title: maintTitle,
+        priority: maintPriority,
+        description: maintDesc,
+      });
+      toast.success("Service/Maintenance request registered successfully.");
+      setIsMaintenanceOpen(false);
+      
+      // Reset
+      setMaintTitle("");
+      setMaintPriority("MEDIUM");
+      setMaintDesc("");
+
+      fetchAssetDetails();
+    } catch (err) {
+      toast.error("Failed to raise maintenance ticket.");
+    }
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const getStatusColor = (lifecycleStatus) => {
+    switch (lifecycleStatus) {
+      case "AVAILABLE": return "bg-emerald-50 text-emerald-600 border-emerald-250";
+      case "ALLOCATED": return "bg-indigo-50 text-indigo-600 border-indigo-250";
+      case "MAINTENANCE": return "bg-amber-50 text-amber-605 border-amber-250";
+      case "LOST": return "bg-rose-50 text-rose-600 border-rose-250";
+      case "RETIRED": return "bg-slate-50 text-slate-500 border-slate-200";
+      default: return "bg-slate-50 text-slate-550 border-slate-200";
+    }
+  };
 
   if (isLoading) {
     return (
@@ -101,122 +222,15 @@ function AssetDetail() {
     );
   }
 
-  const handleAllocate = async (e) => {
-    e.preventDefault();
-    if (!selectedEmployee) {
-      toast.error("Please select an employee.");
-      return;
-    }
-    try {
-      await allocationApi.allocateAsset({
-        assetId: asset.id,
-        employeeId: selectedEmployee,
-        departmentId: selectedDepartment || null,
-        expectedReturnDate: expectedReturnDate || null,
-        notes: allocationNotes,
-      });
-      toast.success("Asset allocated successfully.");
-      setIsAllocationOpen(false);
-      fetchAsset();
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to allocate asset.");
-    }
-  };
-
-  const handleReturn = async (e) => {
-    e.preventDefault();
-    const activeAlloc = asset.allocations.find(a => a.allocationStatus === "ACTIVE" || a.allocationStatus === "OVERDUE");
-    if (!activeAlloc) return;
-
-    try {
-      await allocationApi.returnAsset({
-        allocationId: activeAlloc.id,
-        condition: returnCondition,
-        notes: returnNotes,
-      });
-      toast.success("Asset returned successfully.");
-      setIsReturnOpen(false);
-      fetchAsset();
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to process asset return.");
-    }
-  };
-
-  const handleTransfer = async (e) => {
-    e.preventDefault();
-    const activeAlloc = asset.allocations.find(a => a.allocationStatus === "ACTIVE" || a.allocationStatus === "OVERDUE");
-    
-    try {
-      await allocationApi.createTransfer({
-        assetId: asset.id,
-        allocationId: activeAlloc?.id || null,
-        toDepartmentId: transferToDept || null,
-        toUserId: transferToUser || null,
-        reason: transferReason,
-      });
-      toast.success("Transfer request submitted successfully.");
-      setIsTransferOpen(false);
-      fetchAsset();
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to create transfer request.");
-    }
-  };
-
-  const handleMaintenance = async (e) => {
-    e.preventDefault();
-    if (!maintTitle || !maintDesc) {
-      toast.error("Please fill in Title and Issue description.");
-      return;
-    }
-    try {
-      await maintenanceApi.createRequest({
-        assetId: asset.id,
-        title: maintTitle,
-        description: maintDesc,
-        priority: maintPriority,
-      });
-      toast.success("Maintenance request raised successfully.");
-      setIsMaintenanceOpen(false);
-      fetchAsset();
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to raise maintenance request.");
-    }
-  };
-
-  const handlePrint = () => {
-    const printWindow = window.open("", "_blank");
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>Asset Tag Label - ${asset.assetTag}</title>
-          <style>
-            body { font-family: monospace; text-align: center; padding: 20px; }
-            .label { border: 2px solid black; padding: 20px; display: inline-block; border-radius: 10px; }
-            img { width: 150px; height: 150px; }
-            h2 { margin: 10px 0 0 0; }
-          </style>
-        </head>
-        <body onload="window.print(); window.close();">
-          <div class="label">
-            <img src="${asset.qrCode}" />
-            <h2>${asset.assetTag}</h2>
-            <p>${asset.name}</p>
-          </div>
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
-  };
-
-  const getStatusColor = (lifecycleStatus) => {
-    switch (lifecycleStatus) {
-      case "AVAILABLE": return "text-emerald-400 bg-emerald-500/10 border-emerald-500/20";
-      case "ALLOCATED": return "text-indigo-400 bg-indigo-500/10 border-indigo-500/20";
-      case "MAINTENANCE": return "text-amber-400 bg-amber-500/10 border-amber-500/20";
-      case "LOST": return "text-rose-400 bg-rose-500/10 border-rose-500/20";
-      default: return "text-slate-400 bg-slate-500/10 border-slate-500/20";
-    }
-  };
+  if (!asset) {
+    return (
+      <div className="text-center py-20">
+        <AlertCircle className="h-12 w-12 text-rose-500 mx-auto mb-4" />
+        <h3 className="text-lg font-bold text-slate-800">Asset Not Found</h3>
+        <Link to="/assets" className="text-indigo-600 hover:underline mt-4 inline-block font-semibold">Back to directory</Link>
+      </div>
+    );
+  }
 
   const activeAllocation = asset.allocations.find(a => a.allocationStatus === "ACTIVE" || a.allocationStatus === "OVERDUE");
 
@@ -224,20 +238,20 @@ function AssetDetail() {
     <div className="space-y-6">
       <Toaster position="top-right" />
 
-      {/* Header and Add button */}
+      {/* Header and Back button */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="flex items-center gap-4">
-          <Link to="/assets" className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200 transition">
+          <Link to="/assets" className="p-2 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-slate-800 transition">
             <ArrowLeft className="h-5 w-5" />
           </Link>
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold text-slate-100">{asset.name}</h1>
+              <h1 className="text-2xl font-bold text-slate-850">{asset.name}</h1>
               <span className={`inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full border uppercase ${getStatusColor(asset.lifecycleStatus)}`}>
                 {asset.lifecycleStatus.replace("_", " ")}
               </span>
             </div>
-            <p className="text-sm text-slate-400">Tag: <span className="font-mono text-indigo-400 font-bold">{asset.assetTag}</span> | Serial: {asset.serialNumber || "N/A"}</p>
+            <p className="text-sm text-slate-555">Tag: <span className="font-mono text-indigo-650 font-bold">{asset.assetTag}</span> | Serial: {asset.serialNumber || "N/A"}</p>
           </div>
         </div>
 
@@ -277,40 +291,40 @@ function AssetDetail() {
           <Card className="grid grid-cols-1 md:grid-cols-2 gap-6">
             
             {/* Gallery or Large Image */}
-            <div className="h-60 w-full rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center overflow-hidden">
+            <div className="h-60 w-full rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center overflow-hidden">
               {asset.photos?.[0] ? (
                 <img src={`http://localhost:3001${asset.photos[0].url}`} alt={asset.name} className="h-full w-full object-cover" />
               ) : (
-                <ImageIcon className="h-16 w-16 text-slate-600" />
+                <ImageIcon className="h-16 w-16 text-slate-400" />
               )}
             </div>
 
             <div className="space-y-4">
-              <h3 className="text-base font-bold text-slate-200 border-b border-slate-850 pb-2">Technical Information</h3>
+              <h3 className="text-base font-bold text-slate-800 border-b border-slate-100 pb-2">Technical Information</h3>
               <div className="grid grid-cols-2 gap-y-4 gap-x-2 text-xs">
                 <div>
                   <p className="text-slate-500 font-semibold uppercase tracking-wider text-[10px]">Brand / Model</p>
-                  <p className="text-slate-200 mt-1 font-semibold">{asset.brand || "N/A"} {asset.model || ""}</p>
+                  <p className="text-slate-800 mt-1 font-semibold">{asset.brand || "N/A"} {asset.model || ""}</p>
                 </div>
                 <div>
                   <p className="text-slate-500 font-semibold uppercase tracking-wider text-[10px]">Location</p>
-                  <p className="text-slate-200 mt-1 font-semibold">{asset.location || "N/A"}</p>
+                  <p className="text-slate-800 mt-1 font-semibold">{asset.location || "N/A"}</p>
                 </div>
                 <div>
                   <p className="text-slate-500 font-semibold uppercase tracking-wider text-[10px]">Category</p>
-                  <p className="text-slate-200 mt-1 font-semibold">{asset.category?.name}</p>
+                  <p className="text-slate-800 mt-1 font-semibold">{asset.category?.name}</p>
                 </div>
                 <div>
                   <p className="text-slate-500 font-semibold uppercase tracking-wider text-[10px]">Acquisition Cost</p>
-                  <p className="text-slate-200 mt-1 font-semibold">{asset.acquisitionCost ? `$${Number(asset.acquisitionCost).toLocaleString()}` : "N/A"}</p>
+                  <p className="text-slate-800 mt-1 font-semibold">{asset.acquisitionCost ? `$${Number(asset.acquisitionCost).toLocaleString()}` : "N/A"}</p>
                 </div>
                 <div>
                   <p className="text-slate-500 font-semibold uppercase tracking-wider text-[10px]">Purchase Date</p>
-                  <p className="text-slate-200 mt-1 font-semibold">{asset.purchaseDate ? new Date(asset.purchaseDate).toLocaleDateString() : "N/A"}</p>
+                  <p className="text-slate-805 mt-1 font-semibold">{asset.purchaseDate ? new Date(asset.purchaseDate).toLocaleDateString() : "N/A"}</p>
                 </div>
                 <div>
                   <p className="text-slate-500 font-semibold uppercase tracking-wider text-[10px]">Warranty Expiry</p>
-                  <p className="text-slate-200 mt-1 font-semibold">{asset.warrantyExpiry ? new Date(asset.warrantyExpiry).toLocaleDateString() : "N/A"}</p>
+                  <p className="text-slate-805 mt-1 font-semibold">{asset.warrantyExpiry ? new Date(asset.warrantyExpiry).toLocaleDateString() : "N/A"}</p>
                 </div>
               </div>
             </div>
@@ -318,15 +332,15 @@ function AssetDetail() {
 
           {/* Tabbed area */}
           <div className="space-y-4">
-            <div className="flex border-b border-slate-800">
+            <div className="flex border-b border-slate-200">
               {["timeline", "allocations", "maintenance", "attachments"].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={`py-2 px-6 font-semibold text-xs border-b-2 transition-all uppercase tracking-wider ${
                     activeTab === tab
-                      ? "border-indigo-500 text-indigo-400"
-                      : "border-transparent text-slate-400 hover:text-slate-200"
+                      ? "border-indigo-500 text-indigo-600"
+                      : "border-transparent text-slate-500 hover:text-slate-800"
                   }`}
                 >
                   {tab}
@@ -339,21 +353,21 @@ function AssetDetail() {
               {activeTab === "timeline" && (
                 <Card className="space-y-6">
                   {asset.history?.length > 0 ? (
-                    <div className="relative pl-6 border-l-2 border-slate-800 space-y-6">
+                    <div className="relative pl-6 border-l-2 border-slate-200 space-y-6">
                       {asset.history.map((h) => (
                         <div key={h.id} className="relative">
                           {/* Circle indicator */}
-                          <span className="absolute -left-[31px] top-1.5 h-3.5 w-3.5 rounded-full border-2 border-slate-950 bg-indigo-500" />
+                          <span className="absolute -left-[31px] top-1.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-indigo-600" />
                           <div className="text-xs">
-                            <span className="font-semibold text-slate-200">{h.action.replace("_", " ")}</span>
+                            <span className="font-bold text-slate-800">{h.action.replace("_", " ")}</span>
                             <span className="text-[10px] text-slate-500 block mt-0.5">{new Date(h.createdAt).toLocaleString()}</span>
-                            <p className="text-slate-400 mt-1.5 leading-relaxed">{h.description}</p>
+                            <p className="text-slate-600 mt-1.5 leading-relaxed">{h.description}</p>
                           </div>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-xs text-slate-500 text-center py-6">No historical records available.</p>
+                    <p className="text-xs text-slate-505 text-center py-6">No historical records available.</p>
                   )}
                 </Card>
               )}
@@ -362,7 +376,7 @@ function AssetDetail() {
                 <Card className="p-0 overflow-hidden">
                   {asset.allocations?.length > 0 ? (
                     <table className="w-full text-left text-xs">
-                      <thead className="bg-slate-900 border-b border-slate-800 text-slate-400 font-semibold uppercase tracking-wider">
+                      <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase tracking-wider">
                         <tr>
                           <th className="p-4">Assigned To</th>
                           <th className="p-4">Assigned Date</th>
@@ -370,7 +384,7 @@ function AssetDetail() {
                           <th className="p-4">Status</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-850 text-slate-300">
+                      <tbody className="divide-y divide-slate-100 text-slate-700">
                         {asset.allocations.map((a) => (
                           <tr key={a.id}>
                             <td className="p-4 font-bold">{a.employee.firstName} {a.employee.lastName}</td>
@@ -378,7 +392,7 @@ function AssetDetail() {
                             <td className="p-4">{a.actualReturnDate ? new Date(a.actualReturnDate).toLocaleDateString() : "Active"}</td>
                             <td className="p-4">
                               <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold border uppercase ${
-                                a.allocationStatus === "ACTIVE" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-slate-500/10 text-slate-400 border-slate-500/20"
+                                a.allocationStatus === "ACTIVE" ? "bg-emerald-50 text-emerald-600 border-emerald-250" : "bg-slate-50 text-slate-500 border-slate-200"
                               }`}>
                                 {a.allocationStatus}
                               </span>
@@ -397,7 +411,7 @@ function AssetDetail() {
                 <Card className="p-0 overflow-hidden">
                   {asset.maintenanceRequests?.length > 0 ? (
                     <table className="w-full text-left text-xs">
-                      <thead className="bg-slate-900 border-b border-slate-800 text-slate-400 font-semibold uppercase tracking-wider">
+                      <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase tracking-wider">
                         <tr>
                           <th className="p-4">Issue Title</th>
                           <th className="p-4">Priority</th>
@@ -405,13 +419,13 @@ function AssetDetail() {
                           <th className="p-4">Created Date</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-850 text-slate-300">
+                      <tbody className="divide-y divide-slate-100 text-slate-700">
                         {asset.maintenanceRequests.map((m) => (
                           <tr key={m.id}>
                             <td className="p-4 font-bold">{m.title}</td>
                             <td className="p-4">
                               <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold border uppercase ${
-                                m.priority === "CRITICAL" || m.priority === "HIGH" ? "bg-rose-500/10 text-rose-400 border-rose-500/20" : "bg-slate-500/10 text-slate-400 border-slate-500/20"
+                                m.priority === "CRITICAL" || m.priority === "HIGH" ? "bg-rose-50 text-rose-600 border-rose-200" : "bg-slate-50 text-slate-500 border-slate-200"
                               }`}>
                                 {m.priority}
                               </span>
@@ -438,18 +452,18 @@ function AssetDetail() {
                           href={`http://localhost:3001${d.url}`}
                           target="_blank"
                           rel="noreferrer"
-                          className="flex items-center gap-3 p-3 bg-slate-900 border border-slate-800 rounded-xl hover:border-indigo-500/50 transition"
+                          className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl hover:border-indigo-500 transition animate-all"
                         >
                           <FileText className="h-6 w-6 text-amber-500 flex-shrink-0" />
                           <div className="min-w-0">
-                            <p className="text-xs font-semibold text-slate-200 truncate">{d.name}</p>
+                            <p className="text-xs font-semibold text-slate-800 truncate">{d.name}</p>
                             <span className="text-[10px] text-slate-500">{(d.size / 1024).toFixed(1)} KB</span>
                           </div>
                         </a>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-xs text-slate-500 text-center py-6">No attachments uploaded.</p>
+                    <p className="text-xs text-slate-505 text-center py-6">No attachments uploaded.</p>
                   )}
                 </Card>
               )}
@@ -461,44 +475,44 @@ function AssetDetail() {
         <div className="space-y-6">
           {/* QR tag card */}
           <Card className="flex flex-col items-center justify-center p-6 text-center space-y-4">
-            <h4 className="font-semibold text-slate-200 text-sm">Asset ID Label</h4>
-            <div className="p-4 bg-white rounded-2xl flex items-center justify-center">
+            <h4 className="font-bold text-slate-800 text-sm">Asset ID Label</h4>
+            <div className="p-4 bg-white rounded-2xl border border-slate-200 flex items-center justify-center">
               {asset.qrCode ? (
                 <img src={asset.qrCode} alt="Asset QR Code" className="h-40 w-40" />
               ) : (
                 <QrCode className="h-40 w-40 text-slate-400" />
               )}
             </div>
-            <span className="text-xs font-mono font-bold text-indigo-400">{asset.assetTag}</span>
+            <span className="text-xs font-mono font-bold text-indigo-650">{asset.assetTag}</span>
           </Card>
 
           {/* Allocation Widget info */}
           <Card className="space-y-4">
-            <h4 className="font-semibold text-slate-200 text-sm">Current Allocation</h4>
+            <h4 className="font-bold text-slate-800 text-sm">Current Allocation</h4>
             {activeAllocation ? (
               <div className="space-y-4 text-xs">
-                <div className="flex items-center gap-3 p-3 bg-slate-800/40 border border-slate-800 rounded-2xl">
-                  <div className="h-8 w-8 rounded bg-indigo-500 flex items-center justify-center text-white font-bold">
+                <div className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-2xl">
+                  <div className="h-8 w-8 rounded bg-indigo-600 flex items-center justify-center text-white font-bold">
                     {activeAllocation.employee.firstName[0]}
                   </div>
                   <div>
-                    <p className="font-semibold text-slate-200">{activeAllocation.employee.firstName} {activeAllocation.employee.lastName}</p>
-                    <span className="text-[10px] text-slate-400">{activeAllocation.employee.email}</span>
+                    <p className="font-bold text-slate-800">{activeAllocation.employee.firstName} {activeAllocation.employee.lastName}</p>
+                    <span className="text-[10px] text-slate-500">{activeAllocation.employee.email}</span>
                   </div>
                 </div>
-                <div className="space-y-2 text-slate-400">
+                <div className="space-y-2 text-slate-650">
                   <div className="flex justify-between">
                     <span>Assigned Date</span>
-                    <span className="text-slate-200 font-medium">{new Date(activeAllocation.allocatedDate).toLocaleDateString()}</span>
+                    <span className="text-slate-800 font-semibold">{new Date(activeAllocation.allocatedDate).toLocaleDateString()}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Expected Return</span>
-                    <span className="text-slate-200 font-medium">{activeAllocation.expectedReturnDate ? new Date(activeAllocation.expectedReturnDate).toLocaleDateString() : "N/A"}</span>
+                    <span className="text-slate-800 font-semibold">{activeAllocation.expectedReturnDate ? new Date(activeAllocation.expectedReturnDate).toLocaleDateString() : "N/A"}</span>
                   </div>
                 </div>
               </div>
             ) : (
-              <p className="text-xs text-slate-500 py-2">This asset is not currently allocated to any user.</p>
+              <p className="text-xs text-slate-505 py-2">This asset is not currently allocated to any user.</p>
             )}
           </Card>
         </div>
@@ -507,15 +521,15 @@ function AssetDetail() {
       {/* Allocation Checkout Dialog */}
       {isAllocationOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4">
-          <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-md p-6 space-y-6">
-            <h3 className="text-lg font-bold text-slate-100">Checkout Resource</h3>
+          <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white border border-slate-200 rounded-3xl w-full max-w-md p-6 space-y-6 shadow-2xl">
+            <h3 className="text-lg font-bold text-slate-900">Checkout Resource</h3>
             <form onSubmit={handleAllocate} className="space-y-4">
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">Select Employee</label>
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-505">Select Employee</label>
                 <select
                   value={selectedEmployee}
                   onChange={(e) => setSelectedEmployee(e.target.value)}
-                  className="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none"
+                  className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 focus:outline-none focus:bg-white"
                 >
                   <option value="">Choose Employee</option>
                   {employees.map(e => (
@@ -525,11 +539,11 @@ function AssetDetail() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">Select Department (Optional)</label>
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-505">Select Department (Optional)</label>
                 <select
                   value={selectedDepartment}
                   onChange={(e) => setSelectedDepartment(e.target.value)}
-                  className="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none"
+                  className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 focus:outline-none focus:bg-white"
                 >
                   <option value="">Choose Department</option>
                   {departments.map(d => (
@@ -546,12 +560,12 @@ function AssetDetail() {
               />
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">Checkout Notes</label>
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-505">Checkout Notes</label>
                 <textarea
                   rows={2}
                   value={allocationNotes}
                   onChange={(e) => setAllocationNotes(e.target.value)}
-                  className="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 resize-none"
+                  className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-805 resize-none focus:bg-white"
                 />
               </div>
 
@@ -567,15 +581,15 @@ function AssetDetail() {
       {/* Return Dialog */}
       {isReturnOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4">
-          <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-md p-6 space-y-6">
-            <h3 className="text-lg font-bold text-slate-100">Process Asset Return</h3>
+          <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white border border-slate-200 rounded-3xl w-full max-w-md p-6 space-y-6 shadow-2xl">
+            <h3 className="text-lg font-bold text-slate-900">Process Asset Return</h3>
             <form onSubmit={handleReturn} className="space-y-4">
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">Return Condition</label>
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-505">Return Condition</label>
                 <select
                   value={returnCondition}
                   onChange={(e) => setReturnCondition(e.target.value)}
-                  className="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none"
+                  className="bg-slate-55 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 focus:outline-none focus:bg-white"
                 >
                   <option value="GOOD">Good</option>
                   <option value="FAIR">Fair</option>
@@ -585,12 +599,12 @@ function AssetDetail() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">Return Notes</label>
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-505">Return Notes</label>
                 <textarea
                   rows={3}
                   value={returnNotes}
                   onChange={(e) => setReturnNotes(e.target.value)}
-                  className="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 resize-none"
+                  className="bg-slate-50 border border-slate-205 rounded-xl px-4 py-3 text-sm text-slate-805 resize-none focus:bg-white"
                 />
               </div>
 
@@ -606,15 +620,15 @@ function AssetDetail() {
       {/* Transfer Request Dialog */}
       {isTransferOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4">
-          <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-md p-6 space-y-6">
-            <h3 className="text-lg font-bold text-slate-100">Request Asset Transfer</h3>
+          <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white border border-slate-205 rounded-3xl w-full max-w-md p-6 space-y-6 shadow-2xl">
+            <h3 className="text-lg font-bold text-slate-900">Request Asset Transfer</h3>
             <form onSubmit={handleTransfer} className="space-y-4">
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">Transfer to Department</label>
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-505">Transfer to Department</label>
                 <select
                   value={transferToDept}
                   onChange={(e) => setTransferToDept(e.target.value)}
-                  className="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none"
+                  className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 focus:outline-none focus:bg-white"
                 >
                   <option value="">Select Target Department</option>
                   {departments.map(d => (
@@ -624,11 +638,11 @@ function AssetDetail() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">Transfer to Employee</label>
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-505">Transfer to Employee</label>
                 <select
                   value={transferToUser}
                   onChange={(e) => setTransferToUser(e.target.value)}
-                  className="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none"
+                  className="bg-slate-50 border border-slate-202 rounded-xl px-4 py-3 text-sm text-slate-800 focus:outline-none focus:bg-white"
                 >
                   <option value="">Select Target Employee</option>
                   {employees.map(e => (
@@ -638,12 +652,12 @@ function AssetDetail() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">Reason for Transfer</label>
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-505">Reason for Transfer</label>
                 <textarea
                   rows={2}
                   value={transferReason}
                   onChange={(e) => setTransferReason(e.target.value)}
-                  className="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 resize-none"
+                  className="bg-slate-50 border border-slate-205 rounded-xl px-4 py-3 text-sm text-slate-805 resize-none focus:bg-white"
                 />
               </div>
 
@@ -659,8 +673,8 @@ function AssetDetail() {
       {/* Maintenance Request Dialog */}
       {isMaintenanceOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4">
-          <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-md p-6 space-y-6">
-            <h3 className="text-lg font-bold text-slate-100">Raise Maintenance Ticket</h3>
+          <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white border border-slate-200 rounded-3xl w-full max-w-md p-6 space-y-6 shadow-2xl">
+            <h3 className="text-lg font-bold text-slate-900">Raise Maintenance Ticket</h3>
             <form onSubmit={handleMaintenance} className="space-y-4">
               <Input
                 label="Ticket Title / Summary"
@@ -670,11 +684,11 @@ function AssetDetail() {
               />
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">Ticket Priority</label>
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-505">Ticket Priority</label>
                 <select
                   value={maintPriority}
                   onChange={(e) => setMaintPriority(e.target.value)}
-                  className="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none"
+                  className="bg-slate-55 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 focus:outline-none focus:bg-white"
                 >
                   <option value="LOW">Low</option>
                   <option value="MEDIUM">Medium</option>
@@ -684,12 +698,12 @@ function AssetDetail() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">Detailed Description</label>
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-505">Detailed Description</label>
                 <textarea
                   rows={3}
                   value={maintDesc}
                   onChange={(e) => setMaintDesc(e.target.value)}
-                  className="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 resize-none"
+                  className="bg-slate-50 border border-slate-205 rounded-xl px-4 py-3 text-sm text-slate-805 resize-none focus:bg-white"
                 />
               </div>
 

@@ -1,19 +1,17 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
+  Plus,
+  Search,
   Grid,
   List,
-  Search,
-  SlidersHorizontal,
-  Plus,
-  QrCode,
-  MapPin,
   Tag,
-  User,
-  Trash2,
-  Edit,
+  MapPin,
   Eye,
-  FileSpreadsheet
+  Edit,
+  Trash2,
+  FileSpreadsheet,
+  SlidersHorizontal
 } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import { assetApi } from "../../api/assetApi";
@@ -21,27 +19,26 @@ import { orgApi } from "../../api/orgApi";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 
+const LIMIT = 12;
+
 function AssetDirectory() {
   const [assets, setAssets] = useState([]);
   const [categories, setCategories] = useState([]);
   const [departments, setDepartments] = useState([]);
-  const [viewMode, setViewMode] = useState("grid"); // grid or list/table
   const [isLoading, setIsLoading] = useState(true);
+  const [viewMode, setViewMode] = useState("grid");
 
-  // Search & Filter state
+  // Filters state
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [department, setDepartment] = useState("");
   const [status, setStatus] = useState("");
   const [condition, setCondition] = useState("");
-  const [sortBy, setSortBy] = useState("createdAt");
-  const [sortOrder, setSortOrder] = useState("desc");
-
-  // Pagination state
+  
+  // Pagination
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  const navigate = useNavigate();
   const userJson = localStorage.getItem("user");
   const user = userJson ? JSON.parse(userJson) : null;
   const isManagerOrAdmin = user && ["ADMIN", "ASSET_MANAGER"].includes(user.role);
@@ -51,21 +48,19 @@ function AssetDirectory() {
     try {
       const params = {
         page,
-        limit: 8,
+        limit: LIMIT,
         search: search || undefined,
         categoryId: category || undefined,
         departmentId: department || undefined,
         lifecycleStatus: status || undefined,
         condition: condition || undefined,
-        sortBy,
-        sortOrder,
       };
-      const response = await assetApi.listAssets(params);
-      setAssets(response.data);
-      setTotalPages(response.pagination.totalPages);
+
+      const data = await assetApi.listAssets(params);
+      setAssets(data.data || []);
+      setTotalPages(data.meta?.totalPages || 1);
     } catch (err) {
       toast.error("Failed to load assets.");
-      console.error(err);
     } finally {
       setIsLoading(false);
     }
@@ -73,20 +68,21 @@ function AssetDirectory() {
 
   useEffect(() => {
     fetchAssets();
-  }, [page, category, department, status, condition, sortBy, sortOrder]);
+  }, [page, category, department, status, condition]);
 
   useEffect(() => {
-    const fetchMetadata = async () => {
+    const fetchDropdowns = async () => {
       try {
-        const cats = await orgApi.listCategories();
-        setCategories(cats.data || cats);
+        const cats = await assetApi.getCategories();
+        setCategories(cats);
+        
         const depts = await orgApi.listDepartments();
         setDepartments(depts.data || depts);
       } catch (err) {
         console.error(err);
       }
     };
-    fetchMetadata();
+    fetchDropdowns();
   }, []);
 
   const handleSearchSubmit = (e) => {
@@ -96,49 +92,45 @@ function AssetDirectory() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this asset? This action cannot be undone.")) return;
+    if (!window.confirm("Are you sure you want to delete this asset?")) return;
     try {
       await assetApi.deleteAsset(id);
       toast.success("Asset deleted successfully.");
       fetchAssets();
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to delete asset.");
+      toast.error("Failed to delete asset.");
     }
   };
 
   const exportCSV = () => {
-    if (assets.length === 0) return;
-    const headers = ["Asset Tag", "Asset Name", "Serial Number", "Category", "Status", "Condition", "Location"];
-    const rows = assets.map((a) => [
-      a.assetTag,
-      a.name,
-      a.serialNumber || "N/A",
-      a.category?.name || "N/A",
-      a.lifecycleStatus,
-      a.condition,
-      a.location || "N/A",
-    ]);
-
-    const csvContent = "data:text/csv;charset=utf-8," 
-      + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    if (!assets.length) {
+      toast.error("No assets available to export.");
+      return;
+    }
+    const headers = "Asset Tag,Name,Category,Location,Status,Condition,Serial Number\n";
+    const rows = assets
+      .map(
+        (a) =>
+          `"${a.assetTag}","${a.name}","${a.category?.name || ""}","${a.location || ""}","${a.lifecycleStatus}","${a.condition}","${a.serialNumber || ""}"`
+      )
+      .join("\n");
     
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `AssetFlow_Directory_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const blob = new Blob([headers + rows], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const pointer = document.createElement("a");
+    pointer.setAttribute("href", url);
+    pointer.setAttribute("download", `AssetFlow_Export_${new Date().toISOString().slice(0,10)}.csv`);
+    pointer.click();
   };
 
   const getStatusBadgeColor = (lifecycleStatus) => {
     switch (lifecycleStatus) {
-      case "AVAILABLE": return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
-      case "ALLOCATED": return "bg-indigo-500/10 text-indigo-400 border-indigo-500/20";
-      case "MAINTENANCE": return "bg-amber-500/10 text-amber-400 border-amber-500/20";
-      case "LOST": return "bg-rose-500/10 text-rose-400 border-rose-500/20";
-      case "RETIRED": return "bg-slate-500/10 text-slate-400 border-slate-500/20";
-      default: return "bg-slate-500/10 text-slate-400 border-slate-500/20";
+      case "AVAILABLE": return "bg-emerald-50 text-emerald-600 border-emerald-200";
+      case "ALLOCATED": return "bg-indigo-50 text-indigo-600 border-indigo-200";
+      case "MAINTENANCE": return "bg-amber-50 text-amber-605 border-amber-200";
+      case "LOST": return "bg-rose-50 text-rose-600 border-rose-200";
+      case "RETIRED": return "bg-slate-50 text-slate-500 border-slate-200";
+      default: return "bg-slate-50 text-slate-500 border-slate-200";
     }
   };
 
@@ -149,8 +141,8 @@ function AssetDirectory() {
       {/* Header and Add button */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-slate-100">Asset Directory</h1>
-          <p className="text-sm text-slate-400">Total control of organization assets, tags, warranties, and locations.</p>
+          <h1 className="text-2xl font-bold text-slate-850">Asset Directory</h1>
+          <p className="text-sm text-slate-500">Total control of organization assets, tags, warranties, and locations.</p>
         </div>
 
         <div className="flex items-center gap-3">
@@ -171,7 +163,7 @@ function AssetDirectory() {
       <Card className="p-4 space-y-4">
         <form onSubmit={handleSearchSubmit} className="flex gap-4">
           <div className="relative flex-1">
-            <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+            <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
               <Search className="h-4 w-4" />
             </span>
             <input
@@ -179,7 +171,7 @@ function AssetDirectory() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by tag, name, serial number..."
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 pl-10 pr-4 text-sm text-slate-200 focus:outline-none focus:border-indigo-500"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-sm text-slate-900 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all"
             />
           </div>
           <Button type="submit" variant="secondary" className="w-auto px-6 py-2.5 text-xs">
@@ -192,7 +184,7 @@ function AssetDirectory() {
           <select
             value={category}
             onChange={(e) => { setCategory(e.target.value); setPage(1); }}
-            className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-300 focus:outline-none focus:border-indigo-500"
+            className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-700 focus:outline-none focus:border-indigo-500 focus:bg-white"
           >
             <option value="">All Categories</option>
             {categories.map((c) => (
@@ -204,7 +196,7 @@ function AssetDirectory() {
           <select
             value={department}
             onChange={(e) => { setDepartment(e.target.value); setPage(1); }}
-            className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-300 focus:outline-none focus:border-indigo-500"
+            className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-700 focus:outline-none focus:border-indigo-500 focus:bg-white"
           >
             <option value="">All Departments</option>
             {departments.map((d) => (
@@ -216,7 +208,7 @@ function AssetDirectory() {
           <select
             value={status}
             onChange={(e) => { setStatus(e.target.value); setPage(1); }}
-            className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-300 focus:outline-none focus:border-indigo-500"
+            className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-700 focus:outline-none focus:border-indigo-500 focus:bg-white"
           >
             <option value="">All Statuses</option>
             <option value="AVAILABLE">Available</option>
@@ -231,7 +223,7 @@ function AssetDirectory() {
           <select
             value={condition}
             onChange={(e) => { setCondition(e.target.value); setPage(1); }}
-            className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-300 focus:outline-none focus:border-indigo-500"
+            className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-700 focus:outline-none focus:border-indigo-500 focus:bg-white"
           >
             <option value="">All Conditions</option>
             <option value="NEW">New</option>
@@ -241,16 +233,16 @@ function AssetDirectory() {
           </select>
 
           {/* Grid/Table View toggle */}
-          <div className="flex gap-2 justify-end items-center bg-slate-950 border border-slate-800 rounded-xl px-2.5">
+          <div className="flex gap-2 justify-end items-center bg-slate-50 border border-slate-200 rounded-xl px-2.5">
             <button
               onClick={() => setViewMode("grid")}
-              className={`p-1.5 rounded-lg transition ${viewMode === "grid" ? "bg-slate-800 text-indigo-400" : "text-slate-500"}`}
+              className={`p-1.5 rounded-lg transition ${viewMode === "grid" ? "bg-slate-200 text-indigo-600" : "text-slate-400"}`}
             >
               <Grid className="h-4 w-4" />
             </button>
             <button
               onClick={() => setViewMode("list")}
-              className={`p-1.5 rounded-lg transition ${viewMode === "list" ? "bg-slate-800 text-indigo-400" : "text-slate-500"}`}
+              className={`p-1.5 rounded-lg transition ${viewMode === "list" ? "bg-slate-200 text-indigo-600" : "text-slate-400"}`}
             >
               <List className="h-4 w-4" />
             </button>
@@ -276,29 +268,29 @@ function AssetDirectory() {
 
                 <div className="space-y-4">
                   {/* Photo or Placeholder */}
-                  <div className="h-40 w-full rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center overflow-hidden">
+                  <div className="h-40 w-full rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center overflow-hidden">
                     {asset.photos?.[0] ? (
                       <img src={`http://localhost:3001${asset.photos[0].url}`} alt={asset.name} className="h-full w-full object-cover" />
                     ) : (
-                      <Tag className="h-10 w-10 text-slate-600" />
+                      <Tag className="h-10 w-10 text-slate-400" />
                     )}
                   </div>
 
                   <div className="space-y-1">
-                    <span className="text-[10px] font-mono text-indigo-400 font-bold uppercase">{asset.assetTag}</span>
-                    <h3 className="text-base font-bold text-slate-100 line-clamp-1">{asset.name}</h3>
-                    <p className="text-xs text-slate-400">{asset.category?.name}</p>
+                    <span className="text-[10px] font-mono text-indigo-650 font-bold uppercase">{asset.assetTag}</span>
+                    <h3 className="text-base font-bold text-slate-800 line-clamp-1">{asset.name}</h3>
+                    <p className="text-xs text-slate-500">{asset.category?.name}</p>
                   </div>
 
-                  <div className="flex flex-col gap-2 pt-2 border-t border-slate-800 text-xs text-slate-400">
+                  <div className="flex flex-col gap-2 pt-2 border-t border-slate-100 text-xs text-slate-500">
                     <div className="flex items-center gap-1.5">
-                      <MapPin className="h-3.5 w-3.5 text-slate-500" />
+                      <MapPin className="h-3.5 w-3.5 text-slate-400" />
                       <span className="truncate">{asset.location || "No Location"}</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex gap-2 mt-6 pt-4 border-t border-slate-800">
+                <div className="flex gap-2 mt-6 pt-4 border-t border-slate-100">
                   <Link to={`/assets/${asset.id}`} className="flex-1">
                     <Button variant="outline" className="py-2 text-xs flex items-center justify-center gap-1.5">
                       <Eye className="h-3.5 w-3.5" /> Details
@@ -325,7 +317,7 @@ function AssetDirectory() {
           <Card className="p-0 overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="bg-slate-900 border-b border-slate-800 text-slate-400 uppercase font-bold tracking-wider">
+                <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase font-bold tracking-wider">
                   <th className="py-4 px-6">Asset Tag</th>
                   <th className="py-4 px-6">Name</th>
                   <th className="py-4 px-6">Category</th>
@@ -335,19 +327,19 @@ function AssetDirectory() {
                   <th className="py-4 px-6 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800 text-slate-200">
+              <tbody className="divide-y divide-slate-100 text-slate-800">
                 {assets.map((asset) => (
-                  <tr key={asset.id} className="hover:bg-slate-900/50 transition">
-                    <td className="py-4 px-6 font-mono text-indigo-400 font-bold">{asset.assetTag}</td>
+                  <tr key={asset.id} className="hover:bg-slate-50 transition">
+                    <td className="py-4 px-6 font-mono text-indigo-650 font-bold">{asset.assetTag}</td>
                     <td className="py-4 px-6 font-bold">{asset.name}</td>
-                    <td className="py-4 px-6 text-slate-400">{asset.category?.name}</td>
-                    <td className="py-4 px-6 text-slate-400">{asset.location || "N/A"}</td>
+                    <td className="py-4 px-6 text-slate-500">{asset.category?.name}</td>
+                    <td className="py-4 px-6 text-slate-500">{asset.location || "N/A"}</td>
                     <td className="py-4 px-6">
                       <span className={`inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full border uppercase ${getStatusBadgeColor(asset.lifecycleStatus)}`}>
                         {asset.lifecycleStatus.replace("_", " ")}
                       </span>
                     </td>
-                    <td className="py-4 px-6 text-slate-400">{asset.condition}</td>
+                    <td className="py-4 px-6 text-slate-500">{asset.condition}</td>
                     <td className="py-4 px-6 flex justify-end gap-2 text-right">
                       <Link to={`/assets/${asset.id}`}>
                         <Button variant="outline" className="px-3.5 py-1.5 w-auto">
@@ -375,16 +367,16 @@ function AssetDirectory() {
         )
       ) : (
         <Card className="text-center py-20">
-          <SlidersHorizontal className="h-12 w-12 text-slate-600 mx-auto mb-4" />
-          <h3 className="text-lg font-bold text-slate-300">No Assets Found</h3>
+          <SlidersHorizontal className="h-12 w-12 text-slate-400 mx-auto mb-4" />
+          <h3 className="text-lg font-bold text-slate-800">No Assets Found</h3>
           <p className="text-sm text-slate-500 mt-1">Try modifying your search query or filters.</p>
         </Card>
       )}
 
       {/* Pagination Controls */}
       {totalPages > 1 && (
-        <div className="flex justify-between items-center pt-4 border-t border-slate-800">
-          <p className="text-xs text-slate-400">Page {page} of {totalPages}</p>
+        <div className="flex justify-between items-center pt-4 border-t border-slate-200">
+          <p className="text-xs text-slate-500">Page {page} of {totalPages}</p>
           <div className="flex gap-2">
             <Button
               disabled={page === 1}

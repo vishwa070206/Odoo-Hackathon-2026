@@ -11,9 +11,9 @@ function AuthLayout() {
   }
 
   return (
-    <div className="flex min-h-screen bg-slate-900 text-slate-100 overflow-hidden">
+    <div className="flex min-h-screen bg-slate-50 text-slate-900 overflow-hidden">
       {/* Left decorative/marketing panel (Desktop only) */}
-      <div className="hidden lg:flex lg:w-1/2 relative flex-col justify-between p-12 bg-gradient-to-br from-indigo-950 via-slate-900 to-indigo-950 border-r border-slate-800">
+      <div className="hidden lg:flex lg:w-1/2 relative flex-col justify-between p-12 bg-gradient-to-br from-indigo-950 via-slate-900 to-indigo-950 border-r border-slate-800 text-slate-100">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-500/10 via-transparent to-transparent pointer-events-none" />
         
         <div className="relative z-10">
@@ -45,11 +45,11 @@ function AuthLayout() {
       </div>
 
       {/* Right form panel */}
-      <div className="w-full lg:w-1/2 flex flex-col justify-center px-6 py-12 sm:px-16 lg:px-20 xl:px-24 bg-slate-950">
+      <div className="w-full lg:w-1/2 flex flex-col justify-center px-6 py-12 sm:px-16 lg:px-20 xl:px-24 bg-white text-slate-900">
         <div className="mx-auto w-full max-w-md">
           {/* Logo visible only on mobile/tablet */}
           <div className="lg:hidden mb-8 flex justify-center">
-            <Logo className="h-10 text-indigo-400" />
+            <Logo className="h-10 text-indigo-600" />
           </div>
           
           <Outlet />
