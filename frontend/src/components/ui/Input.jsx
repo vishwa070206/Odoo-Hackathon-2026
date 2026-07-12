@@ -1,23 +1,32 @@
 const Input = ({
   label,
-  type = "text",
-  placeholder,
+  error,
   ...props
 }) => {
+
   return (
-    <div className="flex flex-col gap-2">
-      <label className="text-sm font-medium text-slate-700">
+
+    <div className="space-y-2">
+
+      <label className="font-medium text-slate-700">
         {label}
       </label>
 
       <input
-        type={type}
-        placeholder={placeholder}
-        className="rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+        className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-600"
         {...props}
       />
+
+      {error && (
+        <p className="text-sm text-red-500">
+          {error}
+        </p>
+      )}
+
     </div>
+
   );
+
 };
 
 export default Input;
