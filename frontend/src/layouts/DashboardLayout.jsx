@@ -19,7 +19,8 @@ import {
   Shield,
   FileText,
   Activity,
-  FolderOpen
+  FolderOpen,
+  BarChart2
 } from "lucide-react";
 import { notificationApi } from "../api/notificationApi";
 import Logo from "../components/ui/Logo";
@@ -107,8 +108,8 @@ function DashboardLayout() {
     { name: "Resource Bookings", path: "/bookings", icon: CalendarDays, roles: ["ADMIN", "ASSET_MANAGER", "DEPARTMENT_HEAD", "EMPLOYEE"] },
     { name: "Maintenance Requests", path: "/maintenance", icon: Wrench, roles: ["ADMIN", "ASSET_MANAGER", "DEPARTMENT_HEAD", "EMPLOYEE"] },
     { name: "Audit Cycles", path: "/audits", icon: ClipboardCheck, roles: ["ADMIN", "ASSET_MANAGER"] },
-    { name: "Departments Setup", path: "/departments", icon: Building2, roles: ["ADMIN"] },
-    { name: "Employee Directory", path: "/employees", icon: Users, roles: ["ADMIN"] },
+    { name: "Reports & Analytics", path: "/reports", icon: BarChart2, roles: ["ADMIN", "ASSET_MANAGER"] },
+    { name: "Organization Setup", path: "/organization", icon: Building2, roles: ["ADMIN"] },
     { name: "Activity Logs", path: "/logs", icon: Activity, roles: ["ADMIN", "ASSET_MANAGER", "DEPARTMENT_HEAD"] },
   ];
 

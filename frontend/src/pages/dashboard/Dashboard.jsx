@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ResponsiveContainer,
   PieChart,
@@ -24,10 +25,13 @@ import {
   Clock,
   ExternalLink,
   Plus,
-  BookOpen
+  BookOpen,
+  X
 } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import { dashboardApi } from "../../api/dashboardApi";
+import { maintenanceApi } from "../../api/maintenanceApi";
+import { assetApi } from "../../api/assetApi";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 
@@ -40,6 +44,14 @@ function Dashboard() {
   const [maintData, setMaintData] = useState([]);
   const [upcomingReturns, setUpcomingReturns] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Raise Maintenance Modal
+  const [maintModalOpen, setMaintModalOpen] = useState(false);
+  const [maintAssets, setMaintAssets] = useState([]);
+  const [maintAssetId, setMaintAssetId] = useState("");
+  const [maintIssue, setMaintIssue] = useState("");
+  const [maintPriority, setMaintPriority] = useState("MEDIUM");
+  const [maintSubmitting, setMaintSubmitting] = useState(false);
 
   const navigate = useNavigate();
   const userJson = localStorage.getItem("user");
@@ -118,6 +130,7 @@ function Dashboard() {
   );
 
   return (
+    <>
     <div className="space-y-6">
       <Toaster position="top-right" />
       
@@ -129,7 +142,7 @@ function Dashboard() {
         </div>
 
         {/* Quick Actions Panel */}
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           {isManagerOrAdmin && (
             <Link to="/assets/new">
               <Button className="flex items-center gap-2 py-2.5 px-4 text-xs font-semibold">
@@ -142,6 +155,20 @@ function Dashboard() {
               <BookOpen className="h-4 w-4" /> Book Resource
             </Button>
           </Link>
+          <Button
+            variant="secondary"
+            className="flex items-center gap-2 py-2.5 px-4 text-xs font-semibold"
+            onClick={async () => {
+              try {
+                const res = await assetApi.listAssets({ limit: 100 });
+                setMaintAssets(res.data || []);
+              } catch { toast.error("Failed to load assets."); }
+              setMaintAssetId(""); setMaintIssue(""); setMaintPriority("MEDIUM");
+              setMaintModalOpen(true);
+            }}
+          >
+            <Wrench className="h-4 w-4" /> Raise Maintenance
+          </Button>
         </div>
       </div>
 
@@ -297,7 +324,59 @@ function Dashboard() {
 
       </div>
     </div>
+
+      {/* Raise Maintenance Modal */}
+      <AnimatePresence>
+        {maintModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="bg-white border border-slate-200 rounded-3xl w-full max-w-md p-6 space-y-5 shadow-2xl">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-bold text-slate-900">Raise Maintenance Request</h3>
+                <button onClick={() => setMaintModalOpen(false)} className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500"><X className="h-4 w-4" /></button>
+              </div>
+              <form onSubmit={async (e) => {
+                e.preventDefault();
+                if (!maintAssetId || !maintIssue) { toast.error("Asset and issue description are required."); return; }
+                setMaintSubmitting(true);
+                try {
+                  await maintenanceApi.createRequest({ assetId: maintAssetId, issueDescription: maintIssue, priority: maintPriority });
+                  toast.success("Maintenance request raised successfully!");
+                  setMaintModalOpen(false);
+                } catch (err) { toast.error(err.response?.data?.message || "Failed to submit request."); }
+                finally { setMaintSubmitting(false); }
+              }} className="space-y-4">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Select Asset</label>
+                  <select value={maintAssetId} onChange={e => setMaintAssetId(e.target.value)} required className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                    <option value="">— Choose an asset —</option>
+                    {maintAssets.map(a => <option key={a.id} value={a.id}>{a.name} · {a.assetTag}</option>)}
+                  </select>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Issue Description</label>
+                  <textarea rows={3} value={maintIssue} onChange={e => setMaintIssue(e.target.value)} required placeholder="Describe the problem in detail…" className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-400" />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Priority</label>
+                  <select value={maintPriority} onChange={e => setMaintPriority(e.target.value)} className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                    <option value="LOW">Low</option>
+                    <option value="MEDIUM">Medium</option>
+                    <option value="HIGH">High</option>
+                    <option value="CRITICAL">Critical</option>
+                  </select>
+                </div>
+                <div className="flex gap-3 justify-end pt-2">
+                  <Button onClick={() => setMaintModalOpen(false)} variant="secondary" className="w-auto px-4 py-2 text-xs">Cancel</Button>
+                  <Button type="submit" disabled={maintSubmitting} className="w-auto px-6 py-2 text-xs">{maintSubmitting ? "Submitting…" : "Submit Request"}</Button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
 
 export default Dashboard;
+

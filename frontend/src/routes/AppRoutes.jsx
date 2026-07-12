@@ -25,6 +25,7 @@ import Maintenance from "../pages/maintenance/Maintenance";
 import Audits from "../pages/audit/Audits";
 
 // Organization
+import Organization from "../pages/organization/Organization";
 import Departments from "../pages/organization/Departments";
 import Employees from "../pages/organization/Employees";
 
@@ -73,9 +74,11 @@ function AppRoutes() {
         {/* Dashboard */}
         <Route path="dashboard" element={<Dashboard />} />
 
-        {/* Organization */}
-        <Route path="departments" element={<Departments />} />
-        <Route path="employees" element={<Employees />} />
+        {/* Organization (3-tab: Departments + Categories + Employees) */}
+        <Route path="organization" element={<Organization />} />
+        {/* Legacy routes redirect to organization */}
+        <Route path="departments" element={<Organization />} />
+        <Route path="employees" element={<Organization />} />
 
         {/* Assets */}
         <Route path="assets" element={<AssetDirectory />} />

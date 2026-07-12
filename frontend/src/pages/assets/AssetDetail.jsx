@@ -43,6 +43,7 @@ function AssetDetail() {
   const [selectedDepartment, setSelectedDepartment] = useState("");
   const [expectedReturnDate, setExpectedReturnDate] = useState("");
   const [allocationNotes, setAllocationNotes] = useState("");
+  const [conflictHolder, setConflictHolder] = useState(null); // { name, email } when asset already taken
 
   // Return Dialog State
   const [isReturnOpen, setIsReturnOpen] = useState(false);
@@ -102,26 +103,35 @@ function AssetDetail() {
       toast.error("Please select an employee.");
       return;
     }
+    setConflictHolder(null);
     try {
-      await allocationApi.checkoutAsset({
+      await allocationApi.allocateAsset({
         assetId: id,
         employeeId: selectedEmployee,
         departmentId: selectedDepartment || undefined,
         expectedReturnDate: expectedReturnDate ? new Date(expectedReturnDate).toISOString() : undefined,
         notes: allocationNotes,
       });
-      toast.success("Asset checked out successfully!");
+      toast.success("Asset allocated successfully!");
       setIsAllocationOpen(false);
-      
-      // Reset
       setSelectedEmployee("");
       setSelectedDepartment("");
       setExpectedReturnDate("");
       setAllocationNotes("");
-
       fetchAssetDetails();
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to checkout asset.");
+      const msg = err.response?.data?.message || "";
+      // Spec conflict rule: detect already-allocated error and surface current holder
+      if (msg.toLowerCase().includes("already allocated") || msg.toLowerCase().includes("not available")) {
+        const active = asset?.allocations?.find(a => a.allocationStatus === "ACTIVE" || a.allocationStatus === "OVERDUE");
+        if (active?.employee) {
+          setConflictHolder({ name: `${active.employee.firstName} ${active.employee.lastName}`, email: active.employee.email });
+        } else {
+          toast.error(msg || "Asset is already allocated.");
+        }
+      } else {
+        toast.error(msg || "Failed to allocate asset.");
+      }
     }
   };
 
@@ -153,7 +163,7 @@ function AssetDetail() {
       return;
     }
     try {
-      await allocationApi.requestTransfer({
+      await allocationApi.createTransfer({
         assetId: id,
         targetEmployeeId: transferToUser,
         targetDepartmentId: transferToDept || undefined,
@@ -161,12 +171,9 @@ function AssetDetail() {
       });
       toast.success("Custody transfer request submitted for approval.");
       setIsTransferOpen(false);
-      
-      // Reset
       setTransferToDept("");
       setTransferToUser("");
       setTransferReason("");
-
       fetchAssetDetails();
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to submit transfer request.");
@@ -521,63 +528,72 @@ function AssetDetail() {
 
       {/* Allocation Checkout Dialog */}
       {isAllocationOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-50/80 p-4">
-          <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white border border-slate-200 rounded-3xl w-full max-w-md p-6 space-y-6 shadow-2xl">
-            <h3 className="text-lg font-bold text-slate-900">Checkout Resource</h3>
-            <form onSubmit={handleAllocate} className="space-y-4">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Select Employee</label>
-                <select
-                  value={selectedEmployee}
-                  onChange={(e) => setSelectedEmployee(e.target.value)}
-                  className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 focus:outline-none focus:bg-white"
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+          <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white border border-slate-200 rounded-3xl w-full max-w-md p-6 space-y-5 shadow-2xl">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-bold text-slate-900">Allocate Asset</h3>
+              <button onClick={() => { setIsAllocationOpen(false); setConflictHolder(null); }} className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Conflict Banner — spec: show "currently held by X" + Transfer button */}
+            {conflictHolder && (
+              <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 space-y-3">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="h-5 w-5 text-rose-500 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-sm font-bold text-rose-700">Asset Already Allocated</p>
+                    <p className="text-xs text-rose-600 mt-0.5">
+                      Currently held by <strong>{conflictHolder.name}</strong> ({conflictHolder.email}).
+                    </p>
+                    <p className="text-xs text-rose-500 mt-1">You cannot allocate an asset that's already taken. Submit a Transfer Request instead.</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => { setIsAllocationOpen(false); setConflictHolder(null); setIsTransferOpen(true); }}
+                  className="w-full py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center justify-center gap-2 transition"
                 >
-                  <option value="">Choose Employee</option>
-                  {employees.map(e => (
-                    <option key={e.id} value={e.id}>{e.firstName} {e.lastName} ({e.employeeId})</option>
-                  ))}
-                </select>
+                  <FolderSync className="h-4 w-4" /> Request Transfer from {conflictHolder.name}
+                </button>
               </div>
+            )}
 
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Select Department (Optional)</label>
-                <select
-                  value={selectedDepartment}
-                  onChange={(e) => setSelectedDepartment(e.target.value)}
-                  className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 focus:outline-none focus:bg-white"
-                >
-                  <option value="">Choose Department</option>
-                  {departments.map(d => (
-                    <option key={d.id} value={d.id}>{d.name}</option>
-                  ))}
-                </select>
-              </div>
+            {!conflictHolder && (
+              <form onSubmit={handleAllocate} className="space-y-4">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Select Employee</label>
+                  <select value={selectedEmployee} onChange={(e) => setSelectedEmployee(e.target.value)} className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                    <option value="">Choose Employee</option>
+                    {employees.map(e => <option key={e.id} value={e.id}>{e.firstName} {e.lastName} ({e.employeeId})</option>)}
+                  </select>
+                </div>
 
-              <Input
-                label="Expected Return Date"
-                type="date"
-                value={expectedReturnDate}
-                onChange={(e) => setExpectedReturnDate(e.target.value)}
-              />
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Department (Optional)</label>
+                  <select value={selectedDepartment} onChange={(e) => setSelectedDepartment(e.target.value)} className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                    <option value="">Choose Department</option>
+                    {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+                  </select>
+                </div>
 
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Checkout Notes</label>
-                <textarea
-                  rows={2}
-                  value={allocationNotes}
-                  onChange={(e) => setAllocationNotes(e.target.value)}
-                  className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 resize-none focus:bg-white"
-                />
-              </div>
+                <Input label="Expected Return Date" type="date" value={expectedReturnDate} onChange={(e) => setExpectedReturnDate(e.target.value)} />
 
-              <div className="flex gap-3 justify-end pt-4">
-                <Button onClick={() => setIsAllocationOpen(false)} variant="secondary" className="w-auto px-4">Cancel</Button>
-                <Button type="submit" className="w-auto px-6">Allocate</Button>
-              </div>
-            </form>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Allocation Notes</label>
+                  <textarea rows={2} value={allocationNotes} onChange={(e) => setAllocationNotes(e.target.value)} className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-400" />
+                </div>
+
+                <div className="flex gap-3 justify-end pt-2">
+                  <Button onClick={() => { setIsAllocationOpen(false); setConflictHolder(null); }} variant="secondary" className="w-auto px-4 py-2 text-xs">Cancel</Button>
+                  <Button type="submit" className="w-auto px-6 py-2 text-xs">Allocate Asset</Button>
+                </div>
+              </form>
+            )}
           </motion.div>
         </div>
       )}
+
 
       {/* Return Dialog */}
       {isReturnOpen && (
