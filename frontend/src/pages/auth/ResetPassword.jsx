@@ -68,8 +68,8 @@ function ResetPassword() {
       <Toaster position="top-right" />
 
       <div className="space-y-2">
-        <h2 className="text-2xl font-bold text-slate-100">Set new password</h2>
-        <p className="text-sm text-slate-400">
+        <h2 className="text-2xl font-bold text-slate-900">Set new password</h2>
+        <p className="text-sm text-slate-500">
           Enter a secure password containing uppercase, lowercase, and numeric characters.
         </p>
       </div>
@@ -108,7 +108,7 @@ function ResetPassword() {
       <div className="text-center">
         <Link
           to="/login"
-          className="font-semibold text-sm text-indigo-400 hover:text-indigo-300 transition"
+          className="font-semibold text-sm text-indigo-600 hover:text-indigo-300 transition"
         >
           Back to Login
         </Link>

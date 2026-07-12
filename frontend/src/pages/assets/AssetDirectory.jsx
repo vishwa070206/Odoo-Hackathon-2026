@@ -16,6 +16,7 @@ import {
 import toast, { Toaster } from "react-hot-toast";
 import { assetApi } from "../../api/assetApi";
 import { orgApi } from "../../api/orgApi";
+import { getAssetFallbackImage } from "../../utils/imageHelper";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 
@@ -141,7 +142,7 @@ function AssetDirectory() {
       {/* Header and Add button */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-slate-850">Asset Directory</h1>
+          <h1 className="text-2xl font-bold text-slate-900">Asset Directory</h1>
           <p className="text-sm text-slate-500">Total control of organization assets, tags, warranties, and locations.</p>
         </div>
 
@@ -163,7 +164,7 @@ function AssetDirectory() {
       <Card className="p-4 space-y-4">
         <form onSubmit={handleSearchSubmit} className="flex gap-4">
           <div className="relative flex-1">
-            <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+            <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
               <Search className="h-4 w-4" />
             </span>
             <input
@@ -236,13 +237,13 @@ function AssetDirectory() {
           <div className="flex gap-2 justify-end items-center bg-slate-50 border border-slate-200 rounded-xl px-2.5">
             <button
               onClick={() => setViewMode("grid")}
-              className={`p-1.5 rounded-lg transition ${viewMode === "grid" ? "bg-slate-200 text-indigo-600" : "text-slate-400"}`}
+              className={`p-1.5 rounded-lg transition ${viewMode === "grid" ? "bg-slate-200 text-indigo-600" : "text-slate-500"}`}
             >
               <Grid className="h-4 w-4" />
             </button>
             <button
               onClick={() => setViewMode("list")}
-              className={`p-1.5 rounded-lg transition ${viewMode === "list" ? "bg-slate-200 text-indigo-600" : "text-slate-400"}`}
+              className={`p-1.5 rounded-lg transition ${viewMode === "list" ? "bg-slate-200 text-indigo-600" : "text-slate-500"}`}
             >
               <List className="h-4 w-4" />
             </button>
@@ -269,11 +270,11 @@ function AssetDirectory() {
                 <div className="space-y-4">
                   {/* Photo or Placeholder */}
                   <div className="h-40 w-full rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center overflow-hidden">
-                    {asset.photos?.[0] ? (
-                      <img src={`http://localhost:3001${asset.photos[0].url}`} alt={asset.name} className="h-full w-full object-cover" />
-                    ) : (
-                      <Tag className="h-10 w-10 text-slate-400" />
-                    )}
+                    <img 
+                      src={asset.photos?.[0] ? `http://localhost:3001${asset.photos[0].url}` : getAssetFallbackImage(asset.category?.name, asset.name)} 
+                      alt={asset.name} 
+                      className="h-full w-full object-cover group-hover:scale-105 transition duration-300" 
+                    />
                   </div>
 
                   <div className="space-y-1">
@@ -284,7 +285,7 @@ function AssetDirectory() {
 
                   <div className="flex flex-col gap-2 pt-2 border-t border-slate-100 text-xs text-slate-500">
                     <div className="flex items-center gap-1.5">
-                      <MapPin className="h-3.5 w-3.5 text-slate-400" />
+                      <MapPin className="h-3.5 w-3.5 text-slate-500" />
                       <span className="truncate">{asset.location || "No Location"}</span>
                     </div>
                   </div>
@@ -367,7 +368,7 @@ function AssetDirectory() {
         )
       ) : (
         <Card className="text-center py-20">
-          <SlidersHorizontal className="h-12 w-12 text-slate-400 mx-auto mb-4" />
+          <SlidersHorizontal className="h-12 w-12 text-slate-500 mx-auto mb-4" />
           <h3 className="text-lg font-bold text-slate-800">No Assets Found</h3>
           <p className="text-sm text-slate-500 mt-1">Try modifying your search query or filters.</p>
         </Card>

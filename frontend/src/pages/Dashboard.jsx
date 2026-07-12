@@ -100,7 +100,7 @@ function Dashboard() {
     <Card className="flex flex-col justify-between">
       <div className="flex justify-between items-start">
         <div>
-          <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider">{title}</p>
+          <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider">{title}</p>
           <h3 className="text-3xl font-bold text-slate-800 mt-2">{value}</h3>
         </div>
         <div className={`p-3 rounded-xl bg-slate-50 border border-slate-100 text-${color}-600`}>
@@ -118,7 +118,7 @@ function Dashboard() {
       {/* Header and Welcome */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-850">Welcome Back, {user?.firstName}!</h1>
+          <h1 className="text-2xl font-bold text-slate-900">Welcome Back, {user?.firstName}!</h1>
           <p className="text-sm text-slate-500">Here's what's happening with your organization's resources today.</p>
         </div>
 
@@ -197,7 +197,7 @@ function Dashboard() {
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <p className="text-slate-450 text-sm">No asset status data available.</p>
+              <p className="text-slate-500 text-sm">No asset status data available.</p>
             )}
             <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-2">
               {utilizationData.map((entry, i) => (
@@ -226,7 +226,7 @@ function Dashboard() {
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <p className="text-slate-450 text-sm text-center py-20">No department allocation data available.</p>
+              <p className="text-slate-500 text-sm text-center py-20">No department allocation data available.</p>
             )}
           </div>
         </Card>
@@ -251,7 +251,7 @@ function Dashboard() {
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
-              <p className="text-slate-455 text-sm text-center py-20">No maintenance reports logged.</p>
+              <p className="text-slate-500 text-sm text-center py-20">No maintenance reports logged.</p>
             )}
           </div>
         </Card>
@@ -282,7 +282,7 @@ function Dashboard() {
                 </div>
               ))
             ) : (
-              <p className="text-slate-400 text-center py-10 text-xs">No returns scheduled for the next 7 days.</p>
+              <p className="text-slate-500 text-center py-10 text-xs">No returns scheduled for the next 7 days.</p>
             )}
           </div>
         </Card>

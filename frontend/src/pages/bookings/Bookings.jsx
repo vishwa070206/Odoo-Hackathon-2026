@@ -126,8 +126,8 @@ function Bookings() {
       {/* Header and Add Booking button */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-slate-100">Resource Bookings</h1>
-          <p className="text-sm text-slate-400">Schedule shared assets (conference rooms, vehicles, lab tools) with real-time conflict checking.</p>
+          <h1 className="text-2xl font-bold text-slate-900">Resource Bookings</h1>
+          <p className="text-sm text-slate-500">Schedule shared assets (conference rooms, vehicles, lab tools) with real-time conflict checking.</p>
         </div>
 
         <Button onClick={() => setIsOpen(true)} className="w-auto py-2.5 px-4 text-xs font-semibold flex items-center gap-2">
@@ -136,11 +136,11 @@ function Bookings() {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-800">
+      <div className="flex border-b border-slate-200">
         <button
           onClick={() => setActiveTab("calendar")}
           className={`py-2 px-6 font-semibold text-xs border-b-2 uppercase tracking-wider transition ${
-            activeTab === "calendar" ? "border-indigo-500 text-indigo-400" : "border-transparent text-slate-400 hover:text-slate-200"
+            activeTab === "calendar" ? "border-indigo-500 text-indigo-600" : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >
           Calendar Schedule
@@ -148,7 +148,7 @@ function Bookings() {
         <button
           onClick={() => setActiveTab("list")}
           className={`py-2 px-6 font-semibold text-xs border-b-2 uppercase tracking-wider transition ${
-            activeTab === "list" ? "border-indigo-500 text-indigo-400" : "border-transparent text-slate-400 hover:text-slate-200"
+            activeTab === "list" ? "border-indigo-500 text-indigo-600" : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >
           My Reservations List
@@ -162,7 +162,7 @@ function Bookings() {
         </div>
       ) : activeTab === "calendar" ? (
         /* Calendar render */
-        <Card className="bg-slate-900 border border-slate-800 p-6 h-[600px] text-slate-100 text-xs">
+        <Card className="bg-white border border-slate-200 p-6 h-[600px] text-slate-900 text-xs">
           <BigCalendar
             localizer={localizer}
             events={events}
@@ -191,7 +191,7 @@ function Bookings() {
                   <div>
                     <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold border uppercase ${
                       b.bookingStatus === "UPCOMING"
-                        ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
+                        ? "bg-indigo-500/10 text-indigo-600 border-indigo-500/20"
                         : b.bookingStatus === "CANCELLED"
                         ? "bg-rose-500/10 text-rose-400 border-rose-500/20"
                         : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
@@ -200,10 +200,10 @@ function Bookings() {
                     </span>
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-slate-100">{b.title}</h3>
-                    <p className="text-xs text-indigo-400 font-mono mt-1 font-semibold">{b.asset.name} ({b.asset.assetTag})</p>
+                    <h3 className="text-sm font-bold text-slate-900">{b.title}</h3>
+                    <p className="text-xs text-indigo-600 font-mono mt-1 font-semibold">{b.asset.name} ({b.asset.assetTag})</p>
                   </div>
-                  <div className="space-y-1.5 text-xs text-slate-400">
+                  <div className="space-y-1.5 text-xs text-slate-500">
                     <div className="flex items-center gap-1.5">
                       <Clock className="h-3.5 w-3.5 text-slate-500" />
                       <span>{new Date(b.startTime).toLocaleString()} - {new Date(b.endTime).toLocaleTimeString()}</span>
@@ -227,7 +227,7 @@ function Bookings() {
           ) : (
             <Card className="col-span-2 text-center py-20">
               <Calendar className="h-12 w-12 text-slate-600 mx-auto mb-4" />
-              <h3 className="text-lg font-bold text-slate-350">No Booking Found</h3>
+              <h3 className="text-lg font-bold text-slate-500">No Booking Found</h3>
               <p className="text-sm text-slate-500">You haven't reserved any shared resources yet.</p>
             </Card>
           )}
@@ -236,11 +236,11 @@ function Bookings() {
 
       {/* Booking Form Modal */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4">
-          <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-md p-6 space-y-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-50/80 p-4">
+          <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white border border-slate-200 rounded-3xl w-full max-w-md p-6 space-y-6">
             <div className="flex justify-between items-center">
-              <h3 className="text-lg font-bold text-slate-100">Schedule Shared Resource</h3>
-              <button onClick={() => setIsOpen(false)} className="p-1 rounded bg-slate-850 hover:bg-slate-800 text-slate-400">
+              <h3 className="text-lg font-bold text-slate-900">Schedule Shared Resource</h3>
+              <button onClick={() => setIsOpen(false)} className="p-1 rounded bg-slate-100 hover:bg-slate-100 text-slate-500">
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -255,11 +255,11 @@ function Bookings() {
               />
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">Resource Asset</label>
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Resource Asset</label>
                 <select
                   value={selectedAsset}
                   onChange={(e) => setSelectedAsset(e.target.value)}
-                  className="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none"
+                  className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 focus:outline-none"
                   required
                 >
                   <option value="">Select Bookable Asset</option>
@@ -287,12 +287,12 @@ function Bookings() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">Booking Description</label>
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Booking Description</label>
                 <textarea
                   rows={2}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 resize-none"
+                  className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 resize-none"
                 />
               </div>
 

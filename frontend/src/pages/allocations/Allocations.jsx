@@ -80,16 +80,16 @@ function Allocations() {
       <Toaster position="top-right" />
 
       <div>
-        <h1 className="text-2xl font-bold text-slate-100">Asset Allocations & Transfers</h1>
-        <p className="text-sm text-slate-400">Track current custody, overdue returns, and process department transfer approvals.</p>
+        <h1 className="text-2xl font-bold text-slate-900">Asset Allocations & Transfers</h1>
+        <p className="text-sm text-slate-500">Track current custody, overdue returns, and process department transfer approvals.</p>
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-800">
+      <div className="flex border-b border-slate-200">
         <button
           onClick={() => setActiveTab("allocations")}
           className={`py-2 px-6 font-semibold text-xs border-b-2 uppercase tracking-wider transition ${
-            activeTab === "allocations" ? "border-indigo-500 text-indigo-400" : "border-transparent text-slate-400 hover:text-slate-200"
+            activeTab === "allocations" ? "border-indigo-500 text-indigo-600" : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >
           Active Allocations
@@ -97,7 +97,7 @@ function Allocations() {
         <button
           onClick={() => setActiveTab("transfers")}
           className={`py-2 px-6 font-semibold text-xs border-b-2 uppercase tracking-wider transition ${
-            activeTab === "transfers" ? "border-indigo-500 text-indigo-400" : "border-transparent text-slate-400 hover:text-slate-200"
+            activeTab === "transfers" ? "border-indigo-500 text-indigo-600" : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >
           Transfer Requests
@@ -114,7 +114,7 @@ function Allocations() {
           {allocations.length > 0 ? (
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="bg-slate-900 border-b border-slate-800 text-slate-400 font-bold uppercase tracking-wider">
+                <tr className="bg-white border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider">
                   <th className="py-4 px-6">Asset Tag</th>
                   <th className="py-4 px-6">Asset Name</th>
                   <th className="py-4 px-6">Assigned To</th>
@@ -123,10 +123,10 @@ function Allocations() {
                   <th className="py-4 px-6">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-850 text-slate-200">
+              <tbody className="divide-y divide-slate-100 text-slate-800">
                 {allocations.map((alloc) => (
-                  <tr key={alloc.id} className="hover:bg-slate-900/40 transition">
-                    <td className="py-4 px-6 font-mono text-indigo-400 font-bold">{alloc.asset.assetTag}</td>
+                  <tr key={alloc.id} className="hover:bg-white/40 transition">
+                    <td className="py-4 px-6 font-mono text-indigo-600 font-bold">{alloc.asset.assetTag}</td>
                     <td className="py-4 px-6 font-semibold">{alloc.asset.name}</td>
                     <td className="py-4 px-6">{alloc.employee.firstName} {alloc.employee.lastName}</td>
                     <td className="py-4 px-6">{new Date(alloc.allocatedDate).toLocaleDateString()}</td>
@@ -136,7 +136,7 @@ function Allocations() {
                     <td className="py-4 px-6">
                       <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border text-[10px] font-bold uppercase ${
                         alloc.allocationStatus === "OVERDUE"
-                          ? "bg-rose-500/10 text-rose-450 border-rose-500/20"
+                          ? "bg-rose-500/10 text-rose-600 border-rose-500/20"
                           : "bg-emerald-500/10 text-emerald-455 border-emerald-500/20"
                       }`}>
                         {alloc.allocationStatus === "OVERDUE" && <AlertTriangle className="h-3 w-3" />}
@@ -157,7 +157,7 @@ function Allocations() {
           {transfers.length > 0 ? (
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="bg-slate-900 border-b border-slate-800 text-slate-400 font-bold uppercase tracking-wider">
+                <tr className="bg-white border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider">
                   <th className="py-4 px-6">Asset Tag</th>
                   <th className="py-4 px-6">Asset</th>
                   <th className="py-4 px-6">Requested By</th>
@@ -166,10 +166,10 @@ function Allocations() {
                   {isDeptHeadOrAbove && <th className="py-4 px-6 text-right">Approvals</th>}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-850 text-slate-200">
+              <tbody className="divide-y divide-slate-100 text-slate-800">
                 {transfers.map((t) => (
-                  <tr key={t.id} className="hover:bg-slate-900/40 transition">
-                    <td className="py-4 px-6 font-mono text-indigo-400 font-bold">{t.asset.assetTag}</td>
+                  <tr key={t.id} className="hover:bg-white/40 transition">
+                    <td className="py-4 px-6 font-mono text-indigo-600 font-bold">{t.asset.assetTag}</td>
                     <td className="py-4 px-6 font-semibold">{t.asset.name}</td>
                     <td className="py-4 px-6">{t.requester.firstName} {t.requester.lastName}</td>
                     <td className="py-4 px-6 max-w-xs truncate">{t.reason}</td>

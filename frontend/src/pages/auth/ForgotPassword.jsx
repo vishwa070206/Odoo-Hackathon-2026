@@ -49,8 +49,8 @@ function ForgotPassword() {
       <Toaster position="top-right" />
 
       <div className="space-y-2">
-        <h2 className="text-2xl font-bold text-slate-100">Reset your password</h2>
-        <p className="text-sm text-slate-400">
+        <h2 className="text-2xl font-bold text-slate-900">Reset your password</h2>
+        <p className="text-sm text-slate-500">
           We will send a password reset link to your registered email address.
         </p>
       </div>
@@ -70,8 +70,8 @@ function ForgotPassword() {
           </Button>
         </form>
       ) : (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 text-center space-y-4">
-          <p className="text-sm text-slate-300">
+        <div className="bg-white border border-slate-200 rounded-2xl p-6 text-center space-y-4">
+          <p className="text-sm text-slate-700">
             If an account is associated with that email address, you will receive a link to reset your password shortly.
           </p>
           <Button onClick={() => setIsSent(false)} variant="secondary">
@@ -83,7 +83,7 @@ function ForgotPassword() {
       <div className="text-center">
         <Link
           to="/login"
-          className="font-semibold text-sm text-indigo-400 hover:text-indigo-300 transition"
+          className="font-semibold text-sm text-indigo-600 hover:text-indigo-300 transition"
         >
           Back to Login
         </Link>

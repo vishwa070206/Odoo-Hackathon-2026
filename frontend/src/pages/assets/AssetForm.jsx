@@ -170,18 +170,18 @@ function AssetForm() {
 
       {/* Breadcrumb Header */}
       <div className="flex items-center gap-4">
-        <Link to="/assets" className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200 transition">
+        <Link to="/assets" className="p-2 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-slate-800 transition">
           <ArrowLeft className="h-5 w-5" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-slate-100">{isEditMode ? "Modify Asset Info" : "Register Asset"}</h1>
-          <p className="text-sm text-slate-400">Fill in the technical and purchase specifications of the resource.</p>
+          <h1 className="text-2xl font-bold text-slate-900">{isEditMode ? "Modify Asset Info" : "Register Asset"}</h1>
+          <p className="text-sm text-slate-500">Fill in the technical and purchase specifications of the resource.</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <Card className="space-y-6">
-          <h3 className="text-base font-bold text-indigo-400 border-b border-slate-850 pb-2">Core Details</h3>
+          <h3 className="text-base font-bold text-indigo-600 border-b border-slate-100 pb-2">Core Details</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Input
@@ -192,9 +192,9 @@ function AssetForm() {
             />
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">Category</label>
+              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Category</label>
               <select
-                className="rounded-xl border border-slate-800 bg-slate-900 px-4 py-3 text-slate-100 placeholder-slate-500 outline-none focus:border-indigo-500"
+                className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 placeholder-slate-500 outline-none focus:border-indigo-500"
                 {...register("categoryId")}
               >
                 <option value="">Select Category</option>
@@ -206,9 +206,9 @@ function AssetForm() {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">Assign Department (Optional)</label>
+              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Assign Department (Optional)</label>
               <select
-                className="rounded-xl border border-slate-800 bg-slate-900 px-4 py-3 text-slate-100 placeholder-slate-500 outline-none focus:border-indigo-500"
+                className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 placeholder-slate-500 outline-none focus:border-indigo-500"
                 {...register("departmentId")}
               >
                 <option value="">Select Department</option>
@@ -229,7 +229,7 @@ function AssetForm() {
 
         {/* Purchase & Financial Card */}
         <Card className="space-y-6">
-          <h3 className="text-base font-bold text-indigo-400 border-b border-slate-850 pb-2">Financial & Warranty Details</h3>
+          <h3 className="text-base font-bold text-indigo-600 border-b border-slate-100 pb-2">Financial & Warranty Details</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Input
@@ -269,9 +269,9 @@ function AssetForm() {
             />
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">Condition</label>
+              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Condition</label>
               <select
-                className="rounded-xl border border-slate-800 bg-slate-900 px-4 py-3 text-slate-100 outline-none focus:border-indigo-500"
+                className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none focus:border-indigo-500"
                 {...register("condition")}
               >
                 <option value="NEW">New</option>
@@ -285,7 +285,7 @@ function AssetForm() {
 
         {/* Technical Specs & Location */}
         <Card className="space-y-6">
-          <h3 className="text-base font-bold text-indigo-400 border-b border-slate-850 pb-2">Location & Specifications</h3>
+          <h3 className="text-base font-bold text-indigo-600 border-b border-slate-100 pb-2">Location & Specifications</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Input
@@ -308,15 +308,15 @@ function AssetForm() {
             />
           </div>
 
-          <div className="flex items-center gap-6 pt-4 border-t border-slate-850">
+          <div className="flex items-center gap-6 pt-4 border-t border-slate-100">
             <div className="flex items-center gap-2">
               <input
                 id="isBookable"
                 type="checkbox"
-                className="h-4 w-4 rounded border-slate-800 bg-slate-900 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-slate-950 accent-indigo-600"
+                className="h-4 w-4 rounded border-slate-200 bg-white text-indigo-600 focus:ring-indigo-500 focus:ring-offset-slate-950 accent-indigo-600"
                 {...register("isBookable")}
               />
-              <label htmlFor="isBookable" className="text-sm text-slate-350 cursor-pointer select-none">
+              <label htmlFor="isBookable" className="text-sm text-slate-500 cursor-pointer select-none">
                 Make Bookable (Shared Resource)
               </label>
             </div>
@@ -325,31 +325,31 @@ function AssetForm() {
               <input
                 id="isShared"
                 type="checkbox"
-                className="h-4 w-4 rounded border-slate-800 bg-slate-900 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-slate-950 accent-indigo-600"
+                className="h-4 w-4 rounded border-slate-200 bg-white text-indigo-600 focus:ring-indigo-500 focus:ring-offset-slate-950 accent-indigo-600"
                 {...register("isShared")}
               />
-              <label htmlFor="isShared" className="text-sm text-slate-350 cursor-pointer select-none">
+              <label htmlFor="isShared" className="text-sm text-slate-500 cursor-pointer select-none">
                 Mark as Shared Resource
               </label>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 pt-4 border-t border-slate-850">
+          <div className="grid grid-cols-1 gap-6 pt-4 border-t border-slate-100">
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">Description</label>
+              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Description</label>
               <textarea
                 rows={3}
                 placeholder="Enter technical details, spec information..."
-                className="rounded-xl border border-slate-800 bg-slate-900 px-4 py-3 text-slate-100 placeholder-slate-500 outline-none focus:border-indigo-500 resize-none text-sm"
+                className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 placeholder-slate-500 outline-none focus:border-indigo-500 resize-none text-sm"
                 {...register("description")}
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">Internal notes</label>
+              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Internal notes</label>
               <textarea
                 rows={2}
                 placeholder="Internal registry notes..."
-                className="rounded-xl border border-slate-800 bg-slate-900 px-4 py-3 text-slate-100 placeholder-slate-500 outline-none focus:border-indigo-500 resize-none text-sm"
+                className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 placeholder-slate-500 outline-none focus:border-indigo-500 resize-none text-sm"
                 {...register("notes")}
               />
             </div>
@@ -358,14 +358,14 @@ function AssetForm() {
 
         {/* Files Upload Card */}
         <Card className="space-y-6">
-          <h3 className="text-base font-bold text-indigo-400 border-b border-slate-850 pb-2">Media & Attachments</h3>
+          <h3 className="text-base font-bold text-indigo-600 border-b border-slate-100 pb-2">Media & Attachments</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             
             {/* Photos upload */}
             <div className="space-y-4">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-400 block">Asset Images</label>
-              <div className="border-2 border-dashed border-slate-800 rounded-2xl p-6 hover:border-indigo-500/50 transition cursor-pointer relative">
+              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 block">Asset Images</label>
+              <div className="border-2 border-dashed border-slate-200 rounded-2xl p-6 hover:border-indigo-500/50 transition cursor-pointer relative">
                 <input
                   type="file"
                   multiple
@@ -375,7 +375,7 @@ function AssetForm() {
                 />
                 <div className="text-center space-y-2">
                   <Upload className="h-8 w-8 text-slate-500 mx-auto" />
-                  <p className="text-xs text-slate-400 font-semibold">Upload Asset Photos</p>
+                  <p className="text-xs text-slate-500 font-semibold">Upload Asset Photos</p>
                   <p className="text-[10px] text-slate-500">Drag & drop or click to choose JPG, PNG, WEBP files</p>
                 </div>
               </div>
@@ -384,8 +384,8 @@ function AssetForm() {
               {photos.length > 0 && (
                 <div className="flex flex-wrap gap-3">
                   {photos.map((p, i) => (
-                    <div key={i} className="flex items-center gap-2 px-3 py-1.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-350">
-                      <ImageIcon className="h-4 w-4 text-indigo-400" />
+                    <div key={i} className="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs text-slate-500">
+                      <ImageIcon className="h-4 w-4 text-indigo-600" />
                       <span className="truncate max-w-[120px]">{p.name}</span>
                     </div>
                   ))}
@@ -395,8 +395,8 @@ function AssetForm() {
 
             {/* Documents upload */}
             <div className="space-y-4">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-400 block">Supporting Documents</label>
-              <div className="border-2 border-dashed border-slate-800 rounded-2xl p-6 hover:border-indigo-500/50 transition cursor-pointer relative">
+              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 block">Supporting Documents</label>
+              <div className="border-2 border-dashed border-slate-200 rounded-2xl p-6 hover:border-indigo-500/50 transition cursor-pointer relative">
                 <input
                   type="file"
                   multiple
@@ -406,7 +406,7 @@ function AssetForm() {
                 />
                 <div className="text-center space-y-2">
                   <Upload className="h-8 w-8 text-slate-500 mx-auto" />
-                  <p className="text-xs text-slate-400 font-semibold">Upload Invoices, Manuals, Warranty PDF</p>
+                  <p className="text-xs text-slate-500 font-semibold">Upload Invoices, Manuals, Warranty PDF</p>
                   <p className="text-[10px] text-slate-500">Drag & drop or click to choose files</p>
                 </div>
               </div>
@@ -415,7 +415,7 @@ function AssetForm() {
               {documents.length > 0 && (
                 <div className="flex flex-wrap gap-3">
                   {documents.map((d, i) => (
-                    <div key={i} className="flex items-center gap-2 px-3 py-1.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-350">
+                    <div key={i} className="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs text-slate-500">
                       <FileText className="h-4 w-4 text-amber-400" />
                       <span className="truncate max-w-[120px]">{d.name}</span>
                     </div>

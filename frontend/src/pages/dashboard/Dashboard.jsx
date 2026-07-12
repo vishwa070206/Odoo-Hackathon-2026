@@ -106,10 +106,10 @@ function Dashboard() {
     <Card className="flex flex-col justify-between">
       <div className="flex justify-between items-start">
         <div>
-          <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider">{title}</p>
-          <h3 className="text-3xl font-bold text-slate-100 mt-2">{value}</h3>
+          <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider">{title}</p>
+          <h3 className="text-3xl font-bold text-slate-900 mt-2">{value}</h3>
         </div>
-        <div className={`p-3 rounded-xl bg-slate-800 border border-slate-700 text-${color}-400`}>
+        <div className={`p-3 rounded-xl bg-slate-100 border border-slate-200 text-${color}-400`}>
           <Icon className="h-6 w-6" />
         </div>
       </div>
@@ -124,8 +124,8 @@ function Dashboard() {
       {/* Header and Welcome */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-100">Welcome Back, {user?.firstName}!</h1>
-          <p className="text-sm text-slate-400">Here's what's happening with your organization's resources today.</p>
+          <h1 className="text-2xl font-bold text-slate-900">Welcome Back, {user?.firstName}!</h1>
+          <p className="text-sm text-slate-500">Here's what's happening with your organization's resources today.</p>
         </div>
 
         {/* Quick Actions Panel */}
@@ -182,7 +182,7 @@ function Dashboard() {
         
         {/* Asset Utilization pie chart */}
         <Card className="lg:col-span-1">
-          <h4 className="font-semibold text-slate-200 text-sm mb-4">Asset Status Utilization</h4>
+          <h4 className="font-semibold text-slate-800 text-sm mb-4">Asset Status Utilization</h4>
           <div className="h-64 flex flex-col justify-center items-center">
             {utilizationData.length > 0 ? (
               <ResponsiveContainer width="100%" height="80%">
@@ -209,7 +209,7 @@ function Dashboard() {
             {/* Custom Legend */}
             <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-2">
               {utilizationData.map((entry, i) => (
-                <div key={entry.name} className="flex items-center gap-2 text-[10px] font-medium text-slate-400 uppercase">
+                <div key={entry.name} className="flex items-center gap-2 text-[10px] font-medium text-slate-500 uppercase">
                   <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
                   {entry.name} ({entry.value})
                 </div>
@@ -220,7 +220,7 @@ function Dashboard() {
 
         {/* Department Summary bar chart */}
         <Card className="lg:col-span-2">
-          <h4 className="font-semibold text-slate-200 text-sm mb-4">Department Asset Allocation</h4>
+          <h4 className="font-semibold text-slate-800 text-sm mb-4">Department Asset Allocation</h4>
           <div className="h-64">
             {deptData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
@@ -245,7 +245,7 @@ function Dashboard() {
         
         {/* Maintenance cost trends area/bar chart */}
         <Card className="lg:col-span-2">
-          <h4 className="font-semibold text-slate-200 text-sm mb-4">Maintenance Spend by Priority</h4>
+          <h4 className="font-semibold text-slate-800 text-sm mb-4">Maintenance Spend by Priority</h4>
           <div className="h-64">
             {maintData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
@@ -267,19 +267,19 @@ function Dashboard() {
         {/* Upcoming Returns List Widget */}
         <Card className="lg:col-span-1">
           <div className="flex justify-between items-center mb-4">
-            <h4 className="font-semibold text-slate-200 text-sm">Upcoming Returns</h4>
-            <Link to="/allocations" className="text-xs text-indigo-400 hover:underline flex items-center gap-1">
+            <h4 className="font-semibold text-slate-800 text-sm">Upcoming Returns</h4>
+            <Link to="/allocations" className="text-xs text-indigo-600 hover:underline flex items-center gap-1">
               View all <ExternalLink className="h-3 w-3" />
             </Link>
           </div>
           
-          <div className="divide-y divide-slate-800 max-h-64 overflow-y-auto space-y-1">
+          <div className="divide-y divide-slate-100 max-h-64 overflow-y-auto space-y-1">
             {upcomingReturns.length > 0 ? (
               upcomingReturns.map((alloc) => (
                 <div key={alloc.id} className="py-3 flex justify-between items-center text-xs">
                   <div className="space-y-1">
-                    <p className="font-semibold text-slate-200">{alloc.asset.name}</p>
-                    <p className="text-[10px] text-slate-400">User: {alloc.employee.firstName} {alloc.employee.lastName}</p>
+                    <p className="font-semibold text-slate-800">{alloc.asset.name}</p>
+                    <p className="text-[10px] text-slate-500">User: {alloc.employee.firstName} {alloc.employee.lastName}</p>
                   </div>
                   <div className="text-right">
                     <span className="inline-flex items-center gap-1 font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
@@ -290,7 +290,7 @@ function Dashboard() {
                 </div>
               ))
             ) : (
-              <p className="text-slate-400 text-center py-10 text-xs">No returns scheduled for the next 7 days.</p>
+              <p className="text-slate-500 text-center py-10 text-xs">No returns scheduled for the next 7 days.</p>
             )}
           </div>
         </Card>

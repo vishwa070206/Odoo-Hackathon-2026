@@ -75,8 +75,8 @@ function Signup() {
       <Toaster position="top-right" />
 
       <div className="space-y-2">
-        <h2 className="text-2xl font-bold text-slate-100">Create employee account</h2>
-        <p className="text-sm text-slate-400">
+        <h2 className="text-2xl font-bold text-slate-900">Create employee account</h2>
+        <p className="text-sm text-slate-500">
           Enter your details to register as an organization member.
         </p>
       </div>
@@ -132,11 +132,11 @@ function Signup() {
       </form>
 
       <div className="text-center">
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-slate-500">
           Already have an account?{" "}
           <Link
             to="/login"
-            className="font-semibold text-indigo-400 hover:text-indigo-300 transition"
+            className="font-semibold text-indigo-600 hover:text-indigo-300 transition"
           >
             Sign in
           </Link>

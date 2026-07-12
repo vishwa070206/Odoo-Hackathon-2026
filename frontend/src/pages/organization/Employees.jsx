@@ -76,8 +76,8 @@ function Employees() {
       <Toaster position="top-right" />
 
       <div>
-        <h1 className="text-2xl font-bold text-slate-100">Employee Directory</h1>
-        <p className="text-sm text-slate-400">Manage employee accounts, assign manager hierarchies, and promote employees to system roles.</p>
+        <h1 className="text-2xl font-bold text-slate-900">Employee Directory</h1>
+        <p className="text-sm text-slate-500">Manage employee accounts, assign manager hierarchies, and promote employees to system roles.</p>
       </div>
 
       {isLoading ? (
@@ -89,7 +89,7 @@ function Employees() {
           {employees.length > 0 ? (
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="bg-slate-900 border-b border-slate-800 text-slate-400 font-bold uppercase tracking-wider">
+                <tr className="bg-white border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider">
                   <th className="py-4 px-6">Emp ID</th>
                   <th className="py-4 px-6">Name</th>
                   <th className="py-4 px-6">Email</th>
@@ -99,23 +99,23 @@ function Employees() {
                   <th className="py-4 px-6 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-850 text-slate-200">
+              <tbody className="divide-y divide-slate-100 text-slate-800">
                 {employees.map((emp) => (
-                  <tr key={emp.id} className="hover:bg-slate-900/40 transition">
-                    <td className="py-4 px-6 font-mono text-indigo-400 font-bold">{emp.employeeId || "N/A"}</td>
+                  <tr key={emp.id} className="hover:bg-white/40 transition">
+                    <td className="py-4 px-6 font-mono text-indigo-600 font-bold">{emp.employeeId || "N/A"}</td>
                     <td className="py-4 px-6 font-bold">{emp.firstName} {emp.lastName}</td>
-                    <td className="py-4 px-6 text-slate-400">{emp.email}</td>
-                    <td className="py-4 px-6 text-slate-400">{emp.department?.name || "Unassigned"}</td>
+                    <td className="py-4 px-6 text-slate-500">{emp.email}</td>
+                    <td className="py-4 px-6 text-slate-500">{emp.department?.name || "Unassigned"}</td>
                     <td className="py-4 px-6">
-                      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 uppercase tracking-wide text-[10px] font-bold">
+                      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-600 border border-indigo-500/20 uppercase tracking-wide text-[10px] font-bold">
                         {emp.role.label}
                       </span>
                     </td>
                     <td className="py-4 px-6">
                       <span className={`inline-flex px-1.5 py-0.5 rounded text-[9px] font-bold border uppercase ${
                         emp.status === "ACTIVE"
-                          ? "bg-emerald-500/10 text-emerald-450 border-emerald-500/20"
-                          : "bg-slate-500/10 text-slate-400 border-slate-500/20"
+                          ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
+                          : "bg-slate-500/10 text-slate-500 border-slate-500/20"
                       }`}>
                         {emp.status}
                       </span>
@@ -149,18 +149,18 @@ function Employees() {
 
       {/* Adjust Role Promotion Dialog */}
       {promoteOpen && selectedUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4">
-          <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-md p-6 space-y-6">
-            <h3 className="text-lg font-bold text-slate-100">Adjust System Role / Promote</h3>
-            <p className="text-xs text-slate-400">Update system rights for <span className="font-bold text-slate-200">{selectedUser.firstName} {selectedUser.lastName}</span></p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-50/80 p-4">
+          <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white border border-slate-200 rounded-3xl w-full max-w-md p-6 space-y-6">
+            <h3 className="text-lg font-bold text-slate-900">Adjust System Role / Promote</h3>
+            <p className="text-xs text-slate-500">Update system rights for <span className="font-bold text-slate-800">{selectedUser.firstName} {selectedUser.lastName}</span></p>
 
             <form onSubmit={handlePromoteSubmit} className="space-y-4">
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">Target Role</label>
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Target Role</label>
                 <select
                   value={targetRole}
                   onChange={(e) => setTargetRole(e.target.value)}
-                  className="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none"
+                  className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 focus:outline-none"
                   required
                 >
                   <option value="">Select Role</option>

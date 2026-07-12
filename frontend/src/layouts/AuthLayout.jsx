@@ -13,11 +13,11 @@ function AuthLayout() {
   return (
     <div className="flex min-h-screen bg-slate-50 text-slate-900 overflow-hidden">
       {/* Left decorative/marketing panel (Desktop only) */}
-      <div className="hidden lg:flex lg:w-1/2 relative flex-col justify-between p-12 bg-gradient-to-br from-indigo-950 via-slate-900 to-indigo-950 border-r border-slate-800 text-slate-100">
+      <div className="hidden lg:flex lg:w-1/2 relative flex-col justify-between p-12 bg-gradient-to-br from-indigo-950 via-slate-900 to-indigo-950 border-r border-slate-200 text-slate-900">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-500/10 via-transparent to-transparent pointer-events-none" />
         
         <div className="relative z-10">
-          <Logo className="h-8 text-indigo-400" />
+          <Logo className="h-8 text-indigo-600" />
         </div>
 
         <div className="relative z-10 my-auto max-w-lg space-y-6">
@@ -33,7 +33,7 @@ function AuthLayout() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-lg text-slate-400 leading-relaxed"
+            className="text-lg text-slate-500 leading-relaxed"
           >
             Enterprise Asset & Resource Management System. Track lifecycle, schedule resources, orchestrate maintenance, and audit compliance with ease.
           </motion.p>

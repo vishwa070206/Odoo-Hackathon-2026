@@ -155,14 +155,14 @@ function DashboardLayout() {
                   className={`flex items-center gap-4 px-3 py-3 rounded-xl transition-all duration-200 group relative ${
                     active
                       ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/10"
-                      : "text-slate-650 hover:bg-slate-50 hover:text-slate-900"
+                      : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                   }`}
                 >
-                  <item.icon className={`h-5 w-5 ${active ? "text-white" : "text-slate-450 group-hover:text-slate-700"}`} />
+                  <item.icon className={`h-5 w-5 ${active ? "text-white" : "text-slate-500 group-hover:text-slate-700"}`} />
                   {sidebarOpen && <span className="font-semibold text-sm">{item.name}</span>}
                   
                   {!sidebarOpen && (
-                    <div className="absolute left-20 bg-slate-800 text-slate-100 text-xs font-semibold px-3 py-2 rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-xl border border-slate-700 z-50">
+                    <div className="absolute left-20 bg-slate-100 text-slate-900 text-xs font-semibold px-3 py-2 rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-xl border border-slate-200 z-50">
                       {item.name}
                     </div>
                   )}
@@ -179,7 +179,7 @@ function DashboardLayout() {
             </div>
             {sidebarOpen && (
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold truncate text-slate-805">{user.firstName} {user.lastName}</p>
+                <p className="text-sm font-semibold truncate text-slate-800">{user.firstName} {user.lastName}</p>
                 <span className="inline-flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-600 border border-indigo-100 uppercase mt-0.5">
                   {user.roleLabel}
                 </span>
@@ -200,7 +200,7 @@ function DashboardLayout() {
 
             {/* Global search */}
             <div className="relative max-w-md w-full hidden sm:block">
-              <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+              <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
                 <Search className="h-4 w-4" />
               </span>
               <input
@@ -208,7 +208,7 @@ function DashboardLayout() {
                 value={searchQuery}
                 onChange={(e) => handleGlobalSearch(e.target.value)}
                 placeholder="Search assets, tag, departments..."
-                className="w-full bg-slate-50 border border-slate-205 rounded-xl py-2 pl-10 pr-4 text-sm text-slate-900 placeholder-slate-450 focus:outline-none focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-500 transition-all"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-10 pr-4 text-sm text-slate-900 placeholder-slate-450 focus:outline-none focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-500 transition-all"
               />
               
               {/* Search dropdown results */}
@@ -216,10 +216,10 @@ function DashboardLayout() {
                 <div className="absolute top-12 left-0 w-full bg-white border border-slate-200 rounded-xl shadow-2xl p-4 space-y-4 max-h-96 overflow-y-auto">
                   {searchResults.assets?.length > 0 && (
                     <div>
-                      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Assets</p>
+                      <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Assets</p>
                       {searchResults.assets.map(a => (
                         <Link to={`/assets/${a.id}`} onClick={() => setSearchResults(null)} key={a.id} className="flex justify-between items-center py-2 px-3 hover:bg-slate-50 rounded-lg transition text-sm">
-                          <span className="font-medium text-slate-805">{a.name}</span>
+                          <span className="font-medium text-slate-800">{a.name}</span>
                           <span className="text-xs font-mono text-indigo-600 font-semibold">{a.assetTag}</span>
                         </Link>
                       ))}
@@ -227,10 +227,10 @@ function DashboardLayout() {
                   )}
                   {searchResults.users?.length > 0 && (
                     <div>
-                      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Employees</p>
+                      <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Employees</p>
                       {searchResults.users.map(u => (
                         <Link to="/employees" onClick={() => setSearchResults(null)} key={u.id} className="flex justify-between items-center py-2 px-3 hover:bg-slate-50 rounded-lg transition text-sm">
-                          <span className="font-medium text-slate-805">{u.firstName} {u.lastName}</span>
+                          <span className="font-medium text-slate-800">{u.firstName} {u.lastName}</span>
                           <span className="text-xs text-slate-500">{u.email}</span>
                         </Link>
                       ))}
@@ -238,10 +238,10 @@ function DashboardLayout() {
                   )}
                   {searchResults.departments?.length > 0 && (
                     <div>
-                      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Departments</p>
+                      <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Departments</p>
                       {searchResults.departments.map(d => (
                         <Link to="/departments" onClick={() => setSearchResults(null)} key={d.id} className="flex justify-between items-center py-2 px-3 hover:bg-slate-50 rounded-lg transition text-sm">
-                          <span className="font-medium text-slate-805">{d.name}</span>
+                          <span className="font-medium text-slate-800">{d.name}</span>
                           <span className="text-xs font-mono text-emerald-600 font-semibold">{d.code}</span>
                         </Link>
                       ))}
@@ -262,7 +262,7 @@ function DashboardLayout() {
             <div className="relative" ref={notifRef}>
               <button
                 onClick={() => setNotificationsOpen(!notificationsOpen)}
-                className="relative p-2 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-slate-805 transition"
+                className="relative p-2 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition"
               >
                 <Bell className="h-5 w-5" />
                 {unreadNotifications > 0 && (
@@ -281,7 +281,7 @@ function DashboardLayout() {
                     className="absolute right-0 mt-2 w-80 bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden"
                   >
                     <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-                      <h3 className="font-bold text-slate-805 text-sm">Notifications</h3>
+                      <h3 className="font-bold text-slate-800 text-sm">Notifications</h3>
                       <button onClick={async () => {
                         await notificationApi.markAllAsRead();
                         setUnreadNotifications(0);
@@ -293,11 +293,11 @@ function DashboardLayout() {
                           <div key={n.id} className={`p-4 text-xs transition hover:bg-slate-50 ${!n.isRead && "bg-indigo-50/30"}`}>
                             <p className="font-semibold text-slate-800">{n.title}</p>
                             <p className="text-slate-550 mt-1">{n.message}</p>
-                            <span className="text-[10px] text-slate-400 block mt-2">{new Date(n.createdAt).toLocaleDateString()}</span>
+                            <span className="text-[10px] text-slate-500 block mt-2">{new Date(n.createdAt).toLocaleDateString()}</span>
                           </div>
                         ))
                       ) : (
-                        <p className="text-slate-400 text-center py-6 text-xs">No notifications yet.</p>
+                        <p className="text-slate-500 text-center py-6 text-xs">No notifications yet.</p>
                       )}
                     </div>
                   </motion.div>
@@ -325,8 +325,8 @@ function DashboardLayout() {
                     className="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-2xl shadow-2xl p-2 space-y-1"
                   >
                     <div className="px-3 py-2 border-b border-slate-100">
-                      <p className="text-sm font-semibold truncate text-slate-805">{user.firstName} {user.lastName}</p>
-                      <p className="text-xs text-slate-450 truncate mt-0.5">{user.email}</p>
+                      <p className="text-sm font-semibold truncate text-slate-800">{user.firstName} {user.lastName}</p>
+                      <p className="text-xs text-slate-500 truncate mt-0.5">{user.email}</p>
                     </div>
                     <button
                       onClick={handleLogout}

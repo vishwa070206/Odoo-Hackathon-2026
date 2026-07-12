@@ -23,6 +23,7 @@ import { assetApi } from "../../api/assetApi";
 import { allocationApi } from "../../api/allocationApi";
 import { orgApi } from "../../api/orgApi";
 import { maintenanceApi } from "../../api/maintenanceApi";
+import { getAssetFallbackImage } from "../../utils/imageHelper";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
@@ -246,12 +247,12 @@ function AssetDetail() {
           </Link>
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold text-slate-850">{asset.name}</h1>
+              <h1 className="text-2xl font-bold text-slate-900">{asset.name}</h1>
               <span className={`inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full border uppercase ${getStatusColor(asset.lifecycleStatus)}`}>
                 {asset.lifecycleStatus.replace("_", " ")}
               </span>
             </div>
-            <p className="text-sm text-slate-555">Tag: <span className="font-mono text-indigo-650 font-bold">{asset.assetTag}</span> | Serial: {asset.serialNumber || "N/A"}</p>
+            <p className="text-sm text-slate-550">Tag: <span className="font-mono text-indigo-650 font-bold">{asset.assetTag}</span> | Serial: {asset.serialNumber || "N/A"}</p>
           </div>
         </div>
 
@@ -292,11 +293,11 @@ function AssetDetail() {
             
             {/* Gallery or Large Image */}
             <div className="h-60 w-full rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center overflow-hidden">
-              {asset.photos?.[0] ? (
-                <img src={`http://localhost:3001${asset.photos[0].url}`} alt={asset.name} className="h-full w-full object-cover" />
-              ) : (
-                <ImageIcon className="h-16 w-16 text-slate-400" />
-              )}
+              <img 
+                src={asset.photos?.[0] ? `http://localhost:3001${asset.photos[0].url}` : getAssetFallbackImage(asset.category?.name, asset.name)} 
+                alt={asset.name} 
+                className="h-full w-full object-cover" 
+              />
             </div>
 
             <div className="space-y-4">
@@ -320,11 +321,11 @@ function AssetDetail() {
                 </div>
                 <div>
                   <p className="text-slate-500 font-semibold uppercase tracking-wider text-[10px]">Purchase Date</p>
-                  <p className="text-slate-805 mt-1 font-semibold">{asset.purchaseDate ? new Date(asset.purchaseDate).toLocaleDateString() : "N/A"}</p>
+                  <p className="text-slate-800 mt-1 font-semibold">{asset.purchaseDate ? new Date(asset.purchaseDate).toLocaleDateString() : "N/A"}</p>
                 </div>
                 <div>
                   <p className="text-slate-500 font-semibold uppercase tracking-wider text-[10px]">Warranty Expiry</p>
-                  <p className="text-slate-805 mt-1 font-semibold">{asset.warrantyExpiry ? new Date(asset.warrantyExpiry).toLocaleDateString() : "N/A"}</p>
+                  <p className="text-slate-800 mt-1 font-semibold">{asset.warrantyExpiry ? new Date(asset.warrantyExpiry).toLocaleDateString() : "N/A"}</p>
                 </div>
               </div>
             </div>
@@ -367,7 +368,7 @@ function AssetDetail() {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-xs text-slate-505 text-center py-6">No historical records available.</p>
+                    <p className="text-xs text-slate-500 text-center py-6">No historical records available.</p>
                   )}
                 </Card>
               )}
@@ -463,7 +464,7 @@ function AssetDetail() {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-xs text-slate-505 text-center py-6">No attachments uploaded.</p>
+                    <p className="text-xs text-slate-500 text-center py-6">No attachments uploaded.</p>
                   )}
                 </Card>
               )}
@@ -480,7 +481,7 @@ function AssetDetail() {
               {asset.qrCode ? (
                 <img src={asset.qrCode} alt="Asset QR Code" className="h-40 w-40" />
               ) : (
-                <QrCode className="h-40 w-40 text-slate-400" />
+                <QrCode className="h-40 w-40 text-slate-500" />
               )}
             </div>
             <span className="text-xs font-mono font-bold text-indigo-650">{asset.assetTag}</span>
@@ -500,7 +501,7 @@ function AssetDetail() {
                     <span className="text-[10px] text-slate-500">{activeAllocation.employee.email}</span>
                   </div>
                 </div>
-                <div className="space-y-2 text-slate-650">
+                <div className="space-y-2 text-slate-600">
                   <div className="flex justify-between">
                     <span>Assigned Date</span>
                     <span className="text-slate-800 font-semibold">{new Date(activeAllocation.allocatedDate).toLocaleDateString()}</span>
@@ -512,7 +513,7 @@ function AssetDetail() {
                 </div>
               </div>
             ) : (
-              <p className="text-xs text-slate-505 py-2">This asset is not currently allocated to any user.</p>
+              <p className="text-xs text-slate-500 py-2">This asset is not currently allocated to any user.</p>
             )}
           </Card>
         </div>
@@ -520,12 +521,12 @@ function AssetDetail() {
 
       {/* Allocation Checkout Dialog */}
       {isAllocationOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-50/80 p-4">
           <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white border border-slate-200 rounded-3xl w-full max-w-md p-6 space-y-6 shadow-2xl">
             <h3 className="text-lg font-bold text-slate-900">Checkout Resource</h3>
             <form onSubmit={handleAllocate} className="space-y-4">
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-505">Select Employee</label>
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Select Employee</label>
                 <select
                   value={selectedEmployee}
                   onChange={(e) => setSelectedEmployee(e.target.value)}
@@ -539,7 +540,7 @@ function AssetDetail() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-505">Select Department (Optional)</label>
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Select Department (Optional)</label>
                 <select
                   value={selectedDepartment}
                   onChange={(e) => setSelectedDepartment(e.target.value)}
@@ -560,12 +561,12 @@ function AssetDetail() {
               />
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-505">Checkout Notes</label>
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Checkout Notes</label>
                 <textarea
                   rows={2}
                   value={allocationNotes}
                   onChange={(e) => setAllocationNotes(e.target.value)}
-                  className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-805 resize-none focus:bg-white"
+                  className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 resize-none focus:bg-white"
                 />
               </div>
 
@@ -580,12 +581,12 @@ function AssetDetail() {
 
       {/* Return Dialog */}
       {isReturnOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-50/80 p-4">
           <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white border border-slate-200 rounded-3xl w-full max-w-md p-6 space-y-6 shadow-2xl">
             <h3 className="text-lg font-bold text-slate-900">Process Asset Return</h3>
             <form onSubmit={handleReturn} className="space-y-4">
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-505">Return Condition</label>
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Return Condition</label>
                 <select
                   value={returnCondition}
                   onChange={(e) => setReturnCondition(e.target.value)}
@@ -599,12 +600,12 @@ function AssetDetail() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-505">Return Notes</label>
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Return Notes</label>
                 <textarea
                   rows={3}
                   value={returnNotes}
                   onChange={(e) => setReturnNotes(e.target.value)}
-                  className="bg-slate-50 border border-slate-205 rounded-xl px-4 py-3 text-sm text-slate-805 resize-none focus:bg-white"
+                  className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 resize-none focus:bg-white"
                 />
               </div>
 
@@ -619,12 +620,12 @@ function AssetDetail() {
 
       {/* Transfer Request Dialog */}
       {isTransferOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4">
-          <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white border border-slate-205 rounded-3xl w-full max-w-md p-6 space-y-6 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-50/80 p-4">
+          <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white border border-slate-200 rounded-3xl w-full max-w-md p-6 space-y-6 shadow-2xl">
             <h3 className="text-lg font-bold text-slate-900">Request Asset Transfer</h3>
             <form onSubmit={handleTransfer} className="space-y-4">
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-505">Transfer to Department</label>
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Transfer to Department</label>
                 <select
                   value={transferToDept}
                   onChange={(e) => setTransferToDept(e.target.value)}
@@ -638,11 +639,11 @@ function AssetDetail() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-505">Transfer to Employee</label>
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Transfer to Employee</label>
                 <select
                   value={transferToUser}
                   onChange={(e) => setTransferToUser(e.target.value)}
-                  className="bg-slate-50 border border-slate-202 rounded-xl px-4 py-3 text-sm text-slate-800 focus:outline-none focus:bg-white"
+                  className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 focus:outline-none focus:bg-white"
                 >
                   <option value="">Select Target Employee</option>
                   {employees.map(e => (
@@ -652,12 +653,12 @@ function AssetDetail() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-505">Reason for Transfer</label>
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Reason for Transfer</label>
                 <textarea
                   rows={2}
                   value={transferReason}
                   onChange={(e) => setTransferReason(e.target.value)}
-                  className="bg-slate-50 border border-slate-205 rounded-xl px-4 py-3 text-sm text-slate-805 resize-none focus:bg-white"
+                  className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 resize-none focus:bg-white"
                 />
               </div>
 
@@ -672,7 +673,7 @@ function AssetDetail() {
 
       {/* Maintenance Request Dialog */}
       {isMaintenanceOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-50/80 p-4">
           <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white border border-slate-200 rounded-3xl w-full max-w-md p-6 space-y-6 shadow-2xl">
             <h3 className="text-lg font-bold text-slate-900">Raise Maintenance Ticket</h3>
             <form onSubmit={handleMaintenance} className="space-y-4">
@@ -684,7 +685,7 @@ function AssetDetail() {
               />
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-505">Ticket Priority</label>
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Ticket Priority</label>
                 <select
                   value={maintPriority}
                   onChange={(e) => setMaintPriority(e.target.value)}
@@ -698,12 +699,12 @@ function AssetDetail() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-505">Detailed Description</label>
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Detailed Description</label>
                 <textarea
                   rows={3}
                   value={maintDesc}
                   onChange={(e) => setMaintDesc(e.target.value)}
-                  className="bg-slate-50 border border-slate-205 rounded-xl px-4 py-3 text-sm text-slate-805 resize-none focus:bg-white"
+                  className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 resize-none focus:bg-white"
                 />
               </div>
 
