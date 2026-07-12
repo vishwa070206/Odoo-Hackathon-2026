@@ -17,6 +17,13 @@ import AssetForm from "../pages/assets/AssetForm";
 import AssetDetail from "../pages/assets/AssetDetail";
 import Allocations from "../pages/allocations/Allocations";
 import Bookings from "../pages/bookings/Bookings";
+import Dashboard from "../pages/dashboard/Dashboard";
+import DashboardLayout from "../layouts/DashboardLayout";
+
+import Organization from "../pages/organization/Organization";
+import Assets from "../pages/assets/Assets";
+import Allocation from "../pages/allocation/Allocation";
+import Booking from "../pages/booking/Booking";
 import Maintenance from "../pages/maintenance/Maintenance";
 import Audits from "../pages/audit/Audits";
 import Departments from "../pages/organization/Departments";
@@ -31,6 +38,7 @@ function ProtectedRoute({ children }) {
   }
   return children;
 }
+
 
 function AppRoutes() {
   return (
